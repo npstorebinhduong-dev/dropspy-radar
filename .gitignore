@@ -161,3 +161,6 @@ __pycache__/
 # Browser test artifacts
 playwright-report/
 test-results/
+# Real acquisition evidence/config may contain licensed or sensitive data.
+/acquisition-output/
+/acquisition.local.json

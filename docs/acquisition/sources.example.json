@@ -1,0 +1,134 @@
+{
+  "meta-public": {
+    "adapter": "meta",
+    "access": {
+      "source_id": "meta-ad-library",
+      "source_name": "Meta Ads Library",
+      "mode": "AUTHORIZED_PUBLIC_SOURCE",
+      "corpus_type": "paid_ad",
+      "enabled": false,
+      "authorization_status": "NEEDS_APPROVAL",
+      "countries": [
+        "US"
+      ],
+      "filters": [
+        "keyword",
+        "country"
+      ]
+    }
+  },
+  "meta-official": {
+    "adapter": "meta",
+    "verified_api_version": null,
+    "access": {
+      "source_id": "meta-ad-library",
+      "source_name": "Meta official API",
+      "mode": "OFFICIAL_API",
+      "corpus_type": "paid_ad",
+      "enabled": false,
+      "authorization_status": "NEEDS_APPROVAL",
+      "countries": [
+        "US"
+      ],
+      "filters": [
+        "keyword",
+        "country"
+      ]
+    }
+  },
+  "tiktok-top": {
+    "adapter": "tiktok_top",
+    "access": {
+      "source_id": "tiktok-creative-center",
+      "source_name": "TikTok Creative Center",
+      "mode": "AUTHORIZED_PUBLIC_SOURCE",
+      "corpus_type": "curated_top_ad",
+      "enabled": false,
+      "authorization_status": "NEEDS_APPROVAL",
+      "countries": [
+        "US"
+      ],
+      "filters": [
+        "keyword",
+        "country"
+      ]
+    }
+  },
+  "provider-dataset": {
+    "adapter": "provider_dataset",
+    "dataset_id": "REPLACE_WITH_AUTHORIZED_DATASET",
+    "dataset_query": {
+      "keyword": "solar garden lights",
+      "country": "US"
+    },
+    "mapping": {
+      "ad_id": "ad_id",
+      "advertiser_id": "advertiser_id",
+      "advertiser": "advertiser",
+      "ad_copy": "ad_copy",
+      "platform": "platform",
+      "country": "country",
+      "media_urls": "media_urls",
+      "landing_url": "landing_url",
+      "source_url": "source_url",
+      "started_at": "started_at",
+      "status": "status"
+    },
+    "access": {
+      "source_id": "licensed-provider",
+      "source_name": "Unselected licensed provider existing dataset",
+      "mode": "LICENSED_PROVIDER",
+      "corpus_type": "paid_ad",
+      "enabled": false,
+      "authorization_status": "NEEDS_APPROVAL",
+      "countries": [],
+      "filters": []
+    }
+  },
+  "fixture": {
+    "adapter": "file",
+    "filename": "tests/acquisition/sample.json",
+    "dataset_query": {
+      "keyword": "solar garden lights",
+      "country": "US"
+    },
+    "access": {
+      "source_id": "demo",
+      "source_name": "Synthetic benchmark fixture",
+      "mode": "FIXTURE_TEST",
+      "corpus_type": "demo",
+      "enabled": false,
+      "authorization_status": "FIXTURE_ONLY",
+      "countries": [
+        "US"
+      ],
+      "filters": [
+        "keyword",
+        "country"
+      ]
+    }
+  },
+  "authorized-import": {
+    "adapter": "file",
+    "filename": "REPLACE_WITH_PERMITTED_FILE.json",
+    "dataset_query": {
+      "keyword": "solar garden lights",
+      "country": "US"
+    },
+    "access": {
+      "source_id": "authorized-file",
+      "source_name": "Authorized local dataset",
+      "mode": "AUTHORIZED_IMPORT",
+      "corpus_type": "unknown",
+      "enabled": false,
+      "authorization_status": "NEEDS_APPROVAL",
+      "countries": [
+        "US"
+      ],
+      "filters": [
+        "keyword",
+        "country"
+      ]
+    }
+  }
+}

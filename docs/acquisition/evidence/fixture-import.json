@@ -1,0 +1,99 @@
+{
+  "fixture_only": true,
+  "corpus_type": "demo",
+  "records": [
+    {
+      "external_id": "fixture-a",
+      "platform": "facebook",
+      "advertiser": "Fixture Garden",
+      "advertiser_id": "fixture-page",
+      "country": "US",
+      "observed_at": "2026-11-01T12:00:00+00:00",
+      "status": "active",
+      "title": "Synthetic solar garden lights",
+      "creative_text": "Synthetic solar garden lights",
+      "creative_url": "https://example.com/fixture.mp4",
+      "landing_url": "https://example.com/products/light?variant=one",
+      "source_url": "https://example.com/ads/fixture-a",
+      "delivery_start": "2026-10-01T00:00:00+00:00",
+      "_acquisition": {
+        "source_id": "demo",
+        "source_name": "Synthetic benchmark fixture",
+        "mode": "FIXTURE_TEST",
+        "corpus_type": "demo",
+        "query_spec": {
+          "keyword": "solar garden lights",
+          "country": "US",
+          "advertiser_id": null,
+          "platform": null,
+          "limit": 50
+        },
+        "rights_reference": "",
+        "scope_hash": "3700262d91f7e834f25fd64e2f62ba9d3b99dadf9d10f8c9e3d975dcaf2958a9",
+        "completeness": "partial",
+        "media_urls": [
+          "https://example.com/fixture.mp4"
+        ],
+        "raw": {
+          "external_id": "fixture-a",
+          "platform": "facebook",
+          "advertiser": "Fixture Garden",
+          "advertiser_id": "fixture-page",
+          "country": "US",
+          "observed_at": "2026-11-01T12:00:00Z",
+          "creative_text": "Synthetic solar garden lights",
+          "creative_url": "https://example.com/fixture.mp4",
+          "landing_url": "https://example.com/products/light?variant=one",
+          "source_url": "https://example.com/ads/fixture-a",
+          "delivery_start": "2026-10-01T00:00:00Z",
+          "status": "active"
+        }
+      },
+      "fixture_only": true
+    },
+    {
+      "external_id": "fixture-b",
+      "platform": "instagram",
+      "advertiser": "Fixture Garden",
+      "advertiser_id": null,
+      "country": "US",
+      "observed_at": "2026-11-01T12:00:00+00:00",
+      "status": "unknown",
+      "title": "Synthetic lights second variant",
+      "creative_text": "Synthetic lights second variant",
+      "creative_url": null,
+      "landing_url": "https://example.com/products/light?variant=two",
+      "source_url": null,
+      "delivery_start": null,
+      "_acquisition": {
+        "source_id": "demo",
+        "source_name": "Synthetic benchmark fixture",
+        "mode": "FIXTURE_TEST",
+        "corpus_type": "demo",
+        "query_spec": {
+          "keyword": "solar garden lights",
+          "country": "US",
+          "advertiser_id": null,
+          "platform": null,
+          "limit": 50
+        },
+        "rights_reference": "",
+        "scope_hash": "3700262d91f7e834f25fd64e2f62ba9d3b99dadf9d10f8c9e3d975dcaf2958a9",
+        "completeness": "partial",
+        "media_urls": [],
+        "raw": {
+          "external_id": "fixture-b",
+          "platform": "instagram",
+          "advertiser": "Fixture Garden",
+          "country": "US",
+          "observed_at": "2026-11-01T12:00:00Z",
+          "creative_text": "Synthetic lights second variant",
+          "landing_url": "https://example.com/products/light?variant=two",
+          "status": "unknown"
+        }
+      },
+      "fixture_only": true
+    }
+  ],
+  "skipped": []
+}

@@ -1,0 +1,8 @@
+{
+  "fixture_only": true,
+  "records": [
+    {"external_id":"fixture-a", "platform":"facebook", "advertiser":"Fixture Garden", "advertiser_id":"fixture-page", "country":"US", "observed_at":"2026-11-01T12:00:00Z", "creative_text":"Synthetic solar garden lights", "creative_url":"https://example.com/fixture.mp4", "landing_url":"https://example.com/products/light?variant=one", "source_url":"https://example.com/ads/fixture-a", "delivery_start":"2026-10-01T00:00:00Z", "status":"active"},
+    {"external_id":"fixture-a", "platform":"facebook", "advertiser":"Fixture Garden", "advertiser_id":"fixture-page", "country":"US", "observed_at":"2026-11-01T12:00:00Z", "creative_text":"Synthetic solar garden lights", "landing_url":"https://example.com/products/light?variant=one", "status":"active"},
+    {"external_id":"fixture-b", "platform":"instagram", "advertiser":"Fixture Garden", "country":"US", "observed_at":"2026-11-01T12:00:00Z", "creative_text":"Synthetic lights second variant", "landing_url":"https://example.com/products/light?variant=two", "status":"unknown"}
+  ]
+}

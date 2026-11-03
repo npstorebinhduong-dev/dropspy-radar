@@ -1,0 +1,587 @@
+{
+  "Access": {
+    "additionalProperties": false,
+    "properties": {
+      "source_id": {
+        "title": "Source Id",
+        "type": "string"
+      },
+      "source_name": {
+        "title": "Source Name",
+        "type": "string"
+      },
+      "mode": {
+        "enum": [
+          "OFFICIAL_API",
+          "LICENSED_PROVIDER",
+          "AUTHORIZED_PUBLIC_SOURCE",
+          "AUTHORIZED_IMPORT",
+          "FIXTURE_TEST"
+        ],
+        "title": "Mode",
+        "type": "string"
+      },
+      "corpus_type": {
+        "enum": [
+          "paid_ad",
+          "curated_top_ad",
+          "unknown",
+          "demo"
+        ],
+        "title": "Corpus Type",
+        "type": "string"
+      },
+      "enabled": {
+        "default": false,
+        "title": "Enabled",
+        "type": "boolean"
+      },
+      "authorization_status": {
+        "default": "NEEDS_APPROVAL",
+        "enum": [
+          "NEEDS_APPROVAL",
+          "APPROVED",
+          "DENIED",
+          "FIXTURE_ONLY"
+        ],
+        "title": "Authorization Status",
+        "type": "string"
+      },
+      "rights_reference": {
+        "default": "",
+        "title": "Rights Reference",
+        "type": "string"
+      },
+      "countries": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Countries",
+        "type": "array"
+      },
+      "filters": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Filters",
+        "type": "array"
+      },
+      "paid": {
+        "default": false,
+        "title": "Paid",
+        "type": "boolean"
+      },
+      "budget_approved": {
+        "default": false,
+        "title": "Budget Approved",
+        "type": "boolean"
+      },
+      "hard_budget_usd": {
+        "default": 0,
+        "minimum": 0,
+        "title": "Hard Budget Usd",
+        "type": "number"
+      }
+    },
+    "required": [
+      "source_id",
+      "source_name",
+      "mode",
+      "corpus_type"
+    ],
+    "title": "Access",
+    "type": "object"
+  },
+  "Query": {
+    "additionalProperties": false,
+    "properties": {
+      "keyword": {
+        "maxLength": 200,
+        "minLength": 1,
+        "title": "Keyword",
+        "type": "string"
+      },
+      "country": {
+        "default": "US",
+        "pattern": "^[A-Z]{2}$",
+        "title": "Country",
+        "type": "string"
+      },
+      "advertiser_id": {
+        "anyOf": [
+          {
+            "maxLength": 150,
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Advertiser Id"
+      },
+      "platform": {
+        "anyOf": [
+          {
+            "enum": [
+              "meta",
+              "facebook",
+              "instagram",
+              "reels",
+              "tiktok"
+            ],
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Platform"
+      },
+      "limit": {
+        "default": 50,
+        "maximum": 100,
+        "minimum": 1,
+        "title": "Limit",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "keyword"
+    ],
+    "title": "Query",
+    "type": "object"
+  },
+  "Record": {
+    "additionalProperties": false,
+    "description": "Nullable source facts; query geography/placement never fills absent source fields.",
+    "properties": {
+      "ad_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Ad Id"
+      },
+      "advertiser_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Advertiser Id"
+      },
+      "advertiser": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Advertiser"
+      },
+      "ad_copy": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Ad Copy"
+      },
+      "cta": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Cta"
+      },
+      "platform": {
+        "anyOf": [
+          {
+            "enum": [
+              "meta",
+              "facebook",
+              "instagram",
+              "reels",
+              "tiktok"
+            ],
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Platform"
+      },
+      "country": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Z]{2}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Country"
+      },
+      "media_urls": {
+        "items": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "type": "string"
+        },
+        "title": "Media Urls",
+        "type": "array"
+      },
+      "landing_url": {
+        "anyOf": [
+          {
+            "format": "uri",
+            "maxLength": 2083,
+            "minLength": 1,
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Landing Url"
+      },
+      "source_url": {
+        "anyOf": [
+          {
+            "format": "uri",
+            "maxLength": 2083,
+            "minLength": 1,
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Source Url"
+      },
+      "started_at": {
+        "anyOf": [
+          {
+            "format": "date-time",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Started At"
+      },
+      "status": {
+        "default": "unknown",
+        "enum": [
+          "active",
+          "inactive",
+          "unknown"
+        ],
+        "title": "Status",
+        "type": "string"
+      },
+      "observed_at": {
+        "format": "date-time",
+        "title": "Observed At",
+        "type": "string"
+      },
+      "raw": {
+        "additionalProperties": true,
+        "title": "Raw",
+        "type": "object"
+      }
+    },
+    "required": [
+      "observed_at"
+    ],
+    "title": "Record",
+    "type": "object"
+  },
+  "Page": {
+    "$defs": {
+      "Record": {
+        "additionalProperties": false,
+        "description": "Nullable source facts; query geography/placement never fills absent source fields.",
+        "properties": {
+          "ad_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Ad Id"
+          },
+          "advertiser_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Advertiser Id"
+          },
+          "advertiser": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Advertiser"
+          },
+          "ad_copy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Ad Copy"
+          },
+          "cta": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cta"
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "enum": [
+                  "meta",
+                  "facebook",
+                  "instagram",
+                  "reels",
+                  "tiktok"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Platform"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z]{2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Country"
+          },
+          "media_urls": {
+            "items": {
+              "format": "uri",
+              "maxLength": 2083,
+              "minLength": 1,
+              "type": "string"
+            },
+            "title": "Media Urls",
+            "type": "array"
+          },
+          "landing_url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "maxLength": 2083,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Landing Url"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "maxLength": 2083,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Url"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Started At"
+          },
+          "status": {
+            "default": "unknown",
+            "enum": [
+              "active",
+              "inactive",
+              "unknown"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "observed_at": {
+            "format": "date-time",
+            "title": "Observed At",
+            "type": "string"
+          },
+          "raw": {
+            "additionalProperties": true,
+            "title": "Raw",
+            "type": "object"
+          }
+        },
+        "required": [
+          "observed_at"
+        ],
+        "title": "Record",
+        "type": "object"
+      }
+    },
+    "properties": {
+      "records": {
+        "items": {
+          "$ref": "#/$defs/Record"
+        },
+        "title": "Records",
+        "type": "array"
+      },
+      "next_checkpoint": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Next Checkpoint"
+      },
+      "source_reported_total": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Source Reported Total"
+      },
+      "completeness": {
+        "default": "partial",
+        "enum": [
+          "complete",
+          "partial",
+          "capped"
+        ],
+        "title": "Completeness",
+        "type": "string"
+      },
+      "actual_cost": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Actual Cost"
+      },
+      "currency": {
+        "anyOf": [
+          {
+            "const": "USD",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Currency"
+      }
+    },
+    "required": [
+      "records"
+    ],
+    "title": "Page",
+    "type": "object"
+  }
+}

@@ -25,3 +25,10 @@ Active-search implementation slice (2026-11-03): 20 backend tests, Ruff, ESLint,
 - Live-source checks: official documentation probes fail at the environment proxy CONNECT 403; live US collection is unverified. See US_LIVE_SOURCE_FEASIBILITY.md.
 - Final production Next build passed. Final rebuilt Docker Compose API/web/PostgreSQL all healthy; both same-origin smoke groups passed. Host build requires subprocess permissions in this managed sandbox; it passed with those permissions.
 - Final production-stack Playwright rerun: **4 passed (17.1s)**, with all uploaded fixtures kept in DEMO.
+
+## Phase 3A acquisition — 2026-11-03
+
+- Full backend suite: **62 passed**, no skips with dedicated PostgreSQL (27 acquisition tests + existing 35). Includes migration/rollback/concurrent upserts, source gates, retry/denial, cursor loop/resume/content binding, unknown geography, fixture-to-core search/evidence and failed-expansion semantics. One upstream Starlette/AnyIO deprecation warning.
+- Ruff (API + new scripts), ESLint, TypeScript and production Next build pass. Existing production Compose stack healthy, both same-origin smoke groups pass, existing Playwright regression **4 passed**.
+- Reproducible synthetic fixture: 3 records → 2 unique DEMO ads, 2 raw evidence rows, 0 REAL rows, replay same job, two exact product URLs retained. No application data was relabeled REAL.
+- Eleven public-source/provider documentation probes all failed proxy CONNECT403. 35 no-network preflights stopped at approval. Live ads, live field completeness, live expansion uplift and billed cost remain unmeasured. See docs/acquisition for evidence and prerequisites.

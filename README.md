@@ -67,3 +67,7 @@ Keep the seven dashboard views; Settings now contains Data Sources, upload/previ
 [Import guide, schema, migrations and tests](docs/import-guide.md) · [US live-source feasibility](docs/research/US_LIVE_SOURCE_FEASIBILITY.md).
 
 Upload/import never fetches external URLs or evaluates CSV formulas. Exact replay and concurrent upserts are tested on PostgreSQL. Synthetic complete/partial/capped histories remain DEMO; absence never marks an ad stopped. Source registry approval is mandatory before live collection, in addition to environment flags. No new AI or Winning Product Score is implemented.
+
+## Phase 3A acquisition research
+
+[Adapter/benchmark run guide](docs/acquisition/README.md) · [source discovery](docs/acquisition/SOURCE_DISCOVERY_REPORT.md) · [pilot results](docs/acquisition/US_ADS_PILOT_RESULTS.md). Live sources remain disabled pending verified access/rights; runnable fixture benchmarks exercise the existing v0.2 intake path without claiming real inventory.
