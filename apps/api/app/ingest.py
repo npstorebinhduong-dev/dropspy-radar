@@ -24,7 +24,7 @@ def collect_with_retry(collector: Collector, sleep=time.sleep):
             sleep(2**attempt)
 
 
-def ingest(session, records):
+def ingest(session, records, *, commit=True):
     for record in records:
         ad = session.scalar(select(Ad).where(Ad.platform == record.platform, Ad.source_id == record.source_id, Ad.is_demo == record.is_demo))
         first = record.first_seen.astimezone(timezone.utc).replace(tzinfo=None) if record.first_seen.tzinfo else record.first_seen
@@ -56,5 +56,8 @@ def ingest(session, records):
             if not session.scalar(select(Creative).where(Creative.ad_id == ad.id, Creative.fingerprint == fingerprint)):
                 session.add(Creative(ad_id=ad.id, fingerprint=fingerprint, content={"text": content, "type": "text"}))
                 session.flush()
-    session.commit()
+    if commit:
+        session.commit()
+    else:
+        session.flush()
     logger.info("ingest_complete records=%d", len(records))

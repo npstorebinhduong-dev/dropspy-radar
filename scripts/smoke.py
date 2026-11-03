@@ -32,3 +32,14 @@ with urlopen("http://127.0.0.1:3000", timeout=15) as response:
 print(
     "PASS: Next.js page, same-origin API proxy, PostgreSQL search, filters, saved-ad roundtrip, observation history, scoring, TikTok, advertiser summary"
 )
+
+active = call("/ads?status=active&sort=longest&min_observed_days=14")
+assert active["items"] and all(row["status"] == "active" for row in active["items"])
+report = call(f"/ads/{active['items'][0]['id']}/analysis")
+assert report["version"] == "creative-rules-0.2" and report["is_demo"]
+assert report["status_evidence"]["currently_running_verified"] is False
+assert all(v is None for v in report["business_outcomes"].values())
+assert call("/ads?q=pawsociety.example")["total"] == 2
+print(
+    "PASS: PostgreSQL active/span search, domain keyword, creative analysis and explicit status provenance"
+)

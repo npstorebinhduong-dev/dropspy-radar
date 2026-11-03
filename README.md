@@ -1,6 +1,6 @@
 # DROPSpy Radar v0.1
 
-A runnable DEMO-first ad intelligence workspace for the US, with an EU sample market. Next.js + TypeScript + Tailwind, FastAPI collectors, PostgreSQL, Docker Compose. All sample ads are synthetic and clearly labeled. No live scraping, CAPTCHA solving, private endpoint collection, ROAS or fabricated revenue.
+A runnable DEMO-first ad intelligence workspace for the US, with an EU sample market. Next.js + TypeScript + Tailwind, FastAPI collectors, PostgreSQL, Docker Compose. Default sample ads are synthetic and clearly labeled. An opt-in public Meta first-page reader and authorized local-file import are available; live access is not yet verified in this environment. No CAPTCHA solving, private endpoint collection, ROAS or fabricated revenue.
 
 ## Quick start
 
@@ -48,12 +48,14 @@ Dependency versions: Python requirements.lock pins transitive dependencies, npm 
 
 - Overview counts from the database; Meta search (Facebook/Instagram/Reels), TikTok search, product signal details, advertiser summary, persistent Saved Ads, settings status.
 - Keyword/title, country, platform, advertiser, landing domain, status, first-detected date filters; stable sort and pagination. Meta search's platform scope is all Meta placements.
-- Normalized collector contract; fixture validation; bounded retries for transient transport exceptions; logging without credentials; platform adapters explicitly disabled until an authorized source is implemented.
+- Normalized collector contract; fixture validation; bounded retries for transient transport exceptions; logging without credentials; baseline platform adapters disabled; separate public Meta reader requires explicit operator opt-in and stops on access gates.
 - Ad identity deduplication, creative text fingerprints, first/last seen and immutable observation snapshots; demo/live separation.
 - Explainable Winning Product Score with source, confidence and limitations for each input. Decorative creative cards are sample artwork, not scraped images.
 
 ## Limitations
 
-Single-user local MVP. No live ingestion or real ad metrics. Competitor Tracker summarizes current data, without scheduled watchlists. Product Intelligence is per-ad scoring, without product clustering. Landing quality uses HTTPS syntax only. Observations show sparse snapshots, not continuous ad delivery. Schema bootstrap uses `create_all`, not migrations. One ingestion worker at a time. Authentication, migrations, real provider integration and browser UI automation are next milestones.
+Single-user local MVP. Public Meta collection is opt-in, partial and currently blocked by environment networking; no successful live ad retrieval is claimed. Competitor Tracker summarizes current data, without scheduled watchlists. Product Intelligence is per-ad scoring, without product clustering. Landing quality uses HTTPS syntax only. Observations show sparse snapshots, not continuous ad delivery. Schema bootstrap uses `create_all`, not migrations. One ingestion worker at a time. Authentication, migrations, real provider integration and browser UI automation are next milestones.
 
 See [architecture and scoring](docs/architecture.md) and [source/license research](docs/research.md). Research does not establish permission to collect platform data; no code from those repositories was copied.
+
+See [active search, analysis and public Meta access](docs/active-search.md) for new controls, configuration, observed network blocker and import format. The Phase 2 score and full migration/job blueprint remain proposed.

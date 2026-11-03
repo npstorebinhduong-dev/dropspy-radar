@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Activity,
   ArrowDownUp,
@@ -49,12 +49,44 @@ type Ad = {
   saved: boolean;
   is_demo: boolean;
   creatives: { text: string }[];
+  status_evidence: {
+    freshness: string;
+    age_hours: number;
+    observed_at: string;
+    currently_running_verified: boolean;
+  };
   score: {
     value: number;
     confidence: string;
     components: Metric[];
     disclaimer: string;
   };
+};
+type Analysis = {
+  version: string;
+  method: string;
+  status_evidence: { reason: string; freshness: string; observed_at: string };
+  signals: {
+    category: string;
+    label: string;
+    excerpt: string;
+    creative_index: number;
+    confidence: string;
+  }[];
+  observations: { count: number; span_days: number };
+  creative_variants: { count: number; definition: string };
+  advertiser: { related_ads: number; identity_method: string };
+  source: {
+    kind: string;
+    source_url: string;
+    rights_reference?: string;
+    details?: {
+      placements?: string[];
+      media_urls?: string[];
+      coverage?: string;
+    };
+  };
+  limitations: string[];
 };
 type Overview = {
   total_ads: number;
@@ -102,10 +134,15 @@ const date = (value: string) =>
   });
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`/api${url}`, options);
-  if (!response.ok)
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    const detail = body?.detail;
     throw new Error(
-      `API request failed (${response.status}). Check the API service.`,
+      typeof detail === "string"
+        ? detail
+        : detail?.message || `API request failed (${response.status}).`,
     );
+  }
   return response.json();
 }
 
@@ -118,6 +155,13 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<Ad | null>(null);
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [analysisError, setAnalysisError] = useState("");
+  const detailRequest = useRef(0);
+  const [collecting, setCollecting] = useState(false);
+  const [discoveryMessage, setDiscoveryMessage] = useState("");
+  const [recentDays, setRecentDays] = useState("");
+  const [minDays, setMinDays] = useState("0");
   const [history, setHistory] = useState<
     { observed_at: string; status: string; source_url: string }[]
   >([]);
@@ -126,7 +170,7 @@ export default function Dashboard() {
   const [query, setQuery] = useState("");
   const [country, setCountry] = useState("US");
   const [platform, setPlatform] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("active");
   const [advertiser, setAdvertiser] = useState("");
   const [domain, setDomain] = useState("");
   const [after, setAfter] = useState("");
@@ -148,6 +192,7 @@ export default function Dashboard() {
               ? "tiktok"
               : platform,
         status,
+        min_observed_days: minDays,
         advertiser,
         domain,
         sort,
@@ -155,6 +200,7 @@ export default function Dashboard() {
         page_size: "9",
         saved: String(view === "Saved Ads"),
       });
+      if (recentDays) params.set("observed_within_days", recentDays);
       if (after) params.set("detected_after", `${after}T00:00:00`);
       if (before) params.set("detected_before", `${before}T23:59:59`);
       try {
@@ -187,6 +233,8 @@ export default function Dashboard() {
       view,
       after,
       before,
+      recentDays,
+      minDays,
     ],
   );
   useEffect(() => {
@@ -209,18 +257,71 @@ export default function Dashboard() {
     }
   }
   async function inspect(ad: Ad) {
+    const requestId = ++detailRequest.current;
     setSelected(ad);
     setHistory([]);
+    setAnalysis(null);
+    setAnalysisError("");
     try {
-      setHistory(await request(`/ads/${ad.id}/observations`));
+      const [observations, details] = await Promise.all([
+        request<{ observed_at: string; status: string; source_url: string }[]>(
+          `/ads/${ad.id}/observations`,
+        ),
+        request<Analysis>(`/ads/${ad.id}/analysis`),
+      ]);
+      if (requestId === detailRequest.current) {
+        setHistory(observations);
+        setAnalysis(details);
+      }
     } catch (e) {
-      setError(String(e));
+      if (requestId === detailRequest.current) setAnalysisError(String(e));
     }
   }
+  function closeDetail() {
+    detailRequest.current++;
+    setSelected(null);
+  }
+  async function discoverMeta() {
+    setCollecting(true);
+    setDiscoveryMessage("");
+    try {
+      const result = await request<{
+        records_processed: number;
+        skipped: number;
+        coverage: string;
+      }>("/discovery/meta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ q: query.trim(), country: country || "US" }),
+      });
+      setDiscoveryMessage(
+        `Read ${result.records_processed} ads; ${result.skipped} incomplete/non-active rows skipped. ${result.coverage}.`,
+      );
+      setPage(1);
+      await load();
+    } catch (e) {
+      setDiscoveryMessage(
+        e instanceof Error ? e.message : "Public search unavailable",
+      );
+    } finally {
+      setCollecting(false);
+    }
+  }
+  const metaLibraryUrl =
+    "https://www.facebook.com/ads/library/?" +
+    new URLSearchParams({
+      active_status: "active",
+      ad_type: "all",
+      country: country || "US",
+      q: query,
+      search_type: "keyword_unordered",
+      media_type: "all",
+    });
   function changeView(value: string) {
     setView(value);
     setPage(1);
-    setSelected(null);
+    closeDetail();
+    setDiscoveryMessage("");
   }
   const demo = overview?.mode === "demo";
   return (
@@ -465,7 +566,7 @@ export default function Dashboard() {
                         <Search size={19} />
                         <input
                           aria-label="Search ads"
-                          placeholder="Search products, keywords, or ideas…"
+                          placeholder="Search creative text, advertiser, product, or domain…"
                           value={query}
                           onChange={(e) => {
                             setQuery(e.target.value);
@@ -494,6 +595,97 @@ export default function Dashboard() {
                         <SlidersHorizontal size={16} /> Filters
                       </button>
                     </div>
+                    <div className="research-toolbar">
+                      <label>
+                        Reported status{" "}
+                        <select
+                          aria-label="Reported ad status"
+                          value={status}
+                          onChange={(e) => {
+                            setStatus(e.target.value);
+                            setPage(1);
+                          }}
+                        >
+                          <option value="active">Active</option>
+                          <option value="">All statuses</option>
+                          <option value="inactive">Inactive</option>
+                          <option value="unknown">Unknown</option>
+                        </select>
+                      </label>
+                      <label>
+                        Last observed{" "}
+                        <select
+                          aria-label="Observation freshness"
+                          value={recentDays}
+                          onChange={(e) => {
+                            setRecentDays(e.target.value);
+                            setPage(1);
+                          }}
+                        >
+                          <option value="">Any time</option>
+                          <option value="3">Within 3 days</option>
+                          <option value="7">Within 7 days</option>
+                          <option value="30">Within 30 days</option>
+                        </select>
+                      </label>
+                      <label>
+                        Observation span{" "}
+                        <select
+                          aria-label="Minimum observation span"
+                          value={minDays}
+                          onChange={(e) => {
+                            setMinDays(e.target.value);
+                            setPage(1);
+                          }}
+                        >
+                          <option value="0">Any span</option>
+                          <option value="7">7+ days</option>
+                          <option value="14">14+ days</option>
+                          <option value="30">30+ days</option>
+                        </select>
+                      </label>
+                    </div>
+                    {(view === "Meta Ads Search" || view === "Overview") && (
+                      <div className="public-search-panel">
+                        <div>
+                          <strong>Find active ads in Meta Ad Library</strong>
+                          <p>
+                            Search stored observations above, or read the public
+                            search page. Access gates stop collection. Active
+                            status is reported at observation time.
+                          </p>
+                        </div>
+                        <a
+                          className="secondary"
+                          href={metaLibraryUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Open public library <ExternalLink size={14} />
+                        </a>
+                        <button
+                          className="primary"
+                          disabled={
+                            collecting || query.trim().length < 2 || demo
+                          }
+                          onClick={() => void discoverMeta()}
+                        >
+                          {collecting
+                            ? "Reading public page…"
+                            : "Read public results"}
+                        </button>
+                        {demo && (
+                          <small>
+                            Live collection is off in DEMO. Use the
+                            public-library link to research real ads; live mode
+                            requires operator configuration.
+                          </small>
+                        )}
+                        {discoveryMessage && (
+                          <p role="status">{discoveryMessage}</p>
+                        )}
+                      </div>
+                    )}
                     {filters && (
                       <div className="advanced-filters">
                         <label>
@@ -603,6 +795,13 @@ export default function Dashboard() {
                         >
                           <option value="newest">Newest discovered</option>
                           <option value="oldest">Oldest discovered</option>
+                          <option value="last_seen">Recently observed</option>
+                          <option value="longest">
+                            Longest observation span
+                          </option>
+                          <option value="creative_count">
+                            Most creative texts
+                          </option>
                           <option value="advertiser">Advertiser A–Z</option>
                         </select>
                       </label>
@@ -687,7 +886,7 @@ export default function Dashboard() {
                             <div className="card-status">
                               <span className={`activity-label ${ad.status}`}>
                                 <span />
-                                {ad.status}
+                                {ad.status} · reported
                               </span>
                               <span>
                                 {Math.floor(
@@ -704,6 +903,10 @@ export default function Dashboard() {
                             >
                               {ad.title}
                             </button>
+                            <p className="freshness-note">
+                              Last observed {date(ad.last_seen)} ·{" "}
+                              {ad.status_evidence.freshness}
+                            </p>
                             <div className="landing-domain">
                               {ad.landing_domain}
                               <ExternalLink size={11} />
@@ -763,7 +966,7 @@ export default function Dashboard() {
         </main>
       </div>
       {selected && (
-        <div className="modal-backdrop" onClick={() => setSelected(null)}>
+        <div className="modal-backdrop" onClick={closeDetail}>
           <section
             className="detail-modal"
             role="dialog"
@@ -774,7 +977,7 @@ export default function Dashboard() {
             <button
               className="close-button"
               aria-label="Close details"
-              onClick={() => setSelected(null)}
+              onClick={closeDetail}
             >
               <X />
             </button>
@@ -785,7 +988,88 @@ export default function Dashboard() {
             <p>
               {selected.advertiser} · {selected.platform} · {selected.country}
             </p>
-            <h3>Winning Product Score: {selected.score.value}/100</h3>
+            <h3>Ad analysis</h3>
+            {analysisError ? (
+              <p role="alert">
+                {analysisError}
+                <button onClick={() => void inspect(selected)}>
+                  Retry analysis
+                </button>
+              </p>
+            ) : !analysis ? (
+              <p role="status">Loading evidence and creative analysis…</p>
+            ) : (
+              <div className="analysis-summary">
+                <p>
+                  <strong>{selected.status} · source-reported</strong> at{" "}
+                  {date(analysis.status_evidence.observed_at)} ·{" "}
+                  {analysis.status_evidence.freshness}.{" "}
+                  {analysis.status_evidence.reason}
+                </p>
+                <div className="research-facts">
+                  <span>
+                    <strong>{analysis.observations.count}</strong> observations
+                  </span>
+                  <span>
+                    <strong>{analysis.observations.span_days}d</strong> observed
+                    span
+                  </span>
+                  <span>
+                    <strong>{analysis.creative_variants.count}</strong> text
+                    variants
+                  </span>
+                  <span>
+                    <strong>{analysis.advertiser.related_ads}</strong> ads by
+                    this name
+                  </span>
+                </div>
+                <h3>Creative angles, offers & calls to action</h3>
+                {analysis.signals.length ? (
+                  analysis.signals.map((signal, i) => (
+                    <div className="metric" key={i}>
+                      <strong>
+                        {signal.category}: {signal.label.replaceAll("_", " ")}
+                      </strong>
+                      <p>
+                        “{signal.excerpt}” · Creative{" "}
+                        {signal.creative_index + 1}
+                      </p>
+                      <small>
+                        English text rule · Confidence: {signal.confidence}
+                      </small>
+                    </div>
+                  ))
+                ) : (
+                  <p>
+                    No configured English text rules matched. This does not mean
+                    the creative has no marketing angle.
+                  </p>
+                )}
+                <p>
+                  Source: {analysis.source.kind}.{" "}
+                  {analysis.source.details?.coverage}
+                </p>
+                {analysis.source.details?.placements?.length ? (
+                  <p>
+                    Reported placements:{" "}
+                    {analysis.source.details.placements.join(", ")}
+                  </p>
+                ) : null}
+                {analysis.source.details?.media_urls?.map((url, i) => (
+                  <p key={url}>
+                    <a href={url} target="_blank" rel="noreferrer">
+                      Source creative media {i + 1} <ExternalLink size={12} />
+                    </a>
+                  </p>
+                ))}
+                {analysis.limitations.map((note) => (
+                  <p className="analysis-limitation" key={note}>
+                    {note}
+                  </p>
+                ))}
+              </div>
+            )}
+            <h3>Research signal score: {selected.score.value}/100</h3>
             <p className="muted">
               {selected.score.disclaimer} Confidence:{" "}
               {selected.score.confidence}.

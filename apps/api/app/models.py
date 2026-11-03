@@ -42,3 +42,15 @@ class Observation(Base):
     observed_at: Mapped[datetime] = mapped_column(DateTime)
     status: Mapped[str] = mapped_column(String(20))
     source_url: Mapped[str] = mapped_column(String(2000))
+
+
+class AdProvenance(Base):
+    """Additive import metadata; v0.1 ad/creative/observation tables remain compatible."""
+
+    __tablename__ = "ad_provenance"
+    ad_id: Mapped[int] = mapped_column(ForeignKey("ads.id", ondelete="CASCADE"), primary_key=True)
+    source_id: Mapped[str] = mapped_column(String(80))
+    external_id: Mapped[str] = mapped_column(String(100))
+    rights_reference: Mapped[str] = mapped_column(String(500))
+    imported_at: Mapped[datetime] = mapped_column(DateTime)
+    details: Mapped[dict] = mapped_column(JSON, default=dict)

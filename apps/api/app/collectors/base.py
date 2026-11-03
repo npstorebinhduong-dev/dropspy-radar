@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Literal, Protocol
 
 from pydantic import BaseModel, HttpUrl, field_validator, model_validator
@@ -27,7 +27,9 @@ class AdRecord(BaseModel):
 
     @model_validator(mode="after")
     def chronology(self):
-        if self.last_seen < self.first_seen:
+        first = self.first_seen.astimezone(timezone.utc).replace(tzinfo=None) if self.first_seen.tzinfo else self.first_seen
+        last = self.last_seen.astimezone(timezone.utc).replace(tzinfo=None) if self.last_seen.tzinfo else self.last_seen
+        if last < first:
             raise ValueError("last_seen precedes first_seen")
         return self
 
