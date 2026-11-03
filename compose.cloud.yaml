@@ -1,0 +1,11 @@
+# Managed cloud build only: supply the system CA bundle as a BuildKit secret.
+services:
+  api:
+    build:
+      secrets: [proxy_ca]
+  web:
+    build:
+      secrets: [proxy_ca]
+secrets:
+  proxy_ca:
+    file: /etc/ssl/certs/ca-certificates.crt

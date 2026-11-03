@@ -1,0 +1,215 @@
+[
+  {
+    "source_id": "demo-1",
+    "platform": "facebook",
+    "advertiser": "Blend & Go",
+    "title": "Portable blender",
+    "country": "US",
+    "status": "active",
+    "landing_url": "https://blendgo.example/products/1",
+    "source_url": "https://example.com/demo/ads/1",
+    "first_seen": "2026-10-24T12:00:00",
+    "last_seen": "2026-11-02T12:00:00",
+    "is_demo": true,
+    "creatives": [
+      "Portable blender \u2014 synthetic Kitchen concept 1"
+    ]
+  },
+  {
+    "source_id": "demo-2",
+    "platform": "instagram",
+    "advertiser": "Sunday Studio",
+    "title": "Cloud comfort slides",
+    "country": "US",
+    "status": "active",
+    "landing_url": "https://sundaystudio.example/products/2",
+    "source_url": "https://example.com/demo/ads/2",
+    "first_seen": "2026-10-19T12:00:00",
+    "last_seen": "2026-11-02T12:00:00",
+    "is_demo": true,
+    "creatives": [
+      "Cloud comfort slides \u2014 synthetic Lifestyle concept 1",
+      "Cloud comfort slides \u2014 synthetic Lifestyle concept 2"
+    ]
+  },
+  {
+    "source_id": "demo-3",
+    "platform": "tiktok",
+    "advertiser": "Paw Society",
+    "title": "Pet grooming brush",
+    "country": "US",
+    "status": "active",
+    "landing_url": "https://pawsociety.example/products/3",
+    "source_url": "https://example.com/demo/ads/3",
+    "first_seen": "2026-10-14T12:00:00",
+    "last_seen": "2026-11-02T12:00:00",
+    "is_demo": true,
+    "creatives": [
+      "Pet grooming brush \u2014 synthetic Pets concept 1",
+      "Pet grooming brush \u2014 synthetic Pets concept 2",
+      "Pet grooming brush \u2014 synthetic Pets concept 3"
+    ]
+  },
+  {
+    "source_id": "demo-4",
+    "platform": "reels",
+    "advertiser": "Luma Living",
+    "title": "Sunset ambient lamp",
+    "country": "US",
+    "status": "active",
+    "landing_url": "https://lumaliving.example/products/4",
+    "source_url": "https://example.com/demo/ads/4",
+    "first_seen": "2026-10-09T12:00:00",
+    "last_seen": "2026-11-02T12:00:00",
+    "is_demo": true,
+    "creatives": [
+      "Sunset ambient lamp \u2014 synthetic Home concept 1",
+      "Sunset ambient lamp \u2014 synthetic Home concept 2",
+      "Sunset ambient lamp \u2014 synthetic Home concept 3",
+      "Sunset ambient lamp \u2014 synthetic Home concept 4"
+    ]
+  },
+  {
+    "source_id": "demo-5",
+    "platform": "facebook",
+    "advertiser": "Roam Supply",
+    "title": "Travel compression kit",
+    "country": "US",
+    "status": "active",
+    "landing_url": "https://roamsupply.example/products/5",
+    "source_url": "https://example.com/demo/ads/5",
+    "first_seen": "2026-10-04T12:00:00",
+    "last_seen": "2026-11-02T12:00:00",
+    "is_demo": true,
+    "creatives": [
+      "Travel compression kit \u2014 synthetic Travel concept 1",
+      "Travel compression kit \u2014 synthetic Travel concept 2",
+      "Travel compression kit \u2014 synthetic Travel concept 3",
+      "Travel compression kit \u2014 synthetic Travel concept 4",
+      "Travel compression kit \u2014 synthetic Travel concept 5"
+    ]
+  },
+  {
+    "source_id": "demo-6",
+    "platform": "tiktok",
+    "advertiser": "Forma Office",
+    "title": "Desk posture support",
+    "country": "US",
+    "status": "active",
+    "landing_url": "https://formaoffice.example/products/6",
+    "source_url": "https://example.com/demo/ads/6",
+    "first_seen": "2026-09-29T12:00:00",
+    "last_seen": "2026-11-02T12:00:00",
+    "is_demo": true,
+    "creatives": [
+      "Desk posture support \u2014 synthetic Wellness concept 1"
+    ]
+  },
+  {
+    "source_id": "demo-7",
+    "platform": "instagram",
+    "advertiser": "Paw Society",
+    "title": "Reusable pet roller",
+    "country": "US",
+    "status": "active",
+    "landing_url": "https://pawsociety.example/products/7",
+    "source_url": "https://example.com/demo/ads/7",
+    "first_seen": "2026-09-24T12:00:00",
+    "last_seen": "2026-11-02T12:00:00",
+    "is_demo": true,
+    "creatives": [
+      "Reusable pet roller \u2014 synthetic Pets concept 1",
+      "Reusable pet roller \u2014 synthetic Pets concept 2"
+    ]
+  },
+  {
+    "source_id": "demo-8",
+    "platform": "reels",
+    "advertiser": "Roam Supply",
+    "title": "Minimal travel bottle",
+    "country": "US",
+    "status": "active",
+    "landing_url": "https://roamsupply.example/products/8",
+    "source_url": "https://example.com/demo/ads/8",
+    "first_seen": "2026-09-19T12:00:00",
+    "last_seen": "2026-11-02T12:00:00",
+    "is_demo": true,
+    "creatives": [
+      "Minimal travel bottle \u2014 synthetic Travel concept 1",
+      "Minimal travel bottle \u2014 synthetic Travel concept 2",
+      "Minimal travel bottle \u2014 synthetic Travel concept 3"
+    ]
+  },
+  {
+    "source_id": "demo-9",
+    "platform": "tiktok",
+    "advertiser": "Neat House",
+    "title": "Cordless mini vacuum",
+    "country": "US",
+    "status": "inactive",
+    "landing_url": "https://neathouse.example/products/9",
+    "source_url": "https://example.com/demo/ads/9",
+    "first_seen": "2026-09-14T12:00:00",
+    "last_seen": "2026-11-02T12:00:00",
+    "is_demo": true,
+    "creatives": [
+      "Cordless mini vacuum \u2014 synthetic Home concept 1",
+      "Cordless mini vacuum \u2014 synthetic Home concept 2",
+      "Cordless mini vacuum \u2014 synthetic Home concept 3",
+      "Cordless mini vacuum \u2014 synthetic Home concept 4"
+    ]
+  },
+  {
+    "source_id": "demo-10",
+    "platform": "facebook",
+    "advertiser": "Sunday Studio",
+    "title": "Cooling sleep pillow",
+    "country": "US",
+    "status": "active",
+    "landing_url": "https://sundaystudio.example/products/10",
+    "source_url": "https://example.com/demo/ads/10",
+    "first_seen": "2026-09-09T12:00:00",
+    "last_seen": "2026-11-02T12:00:00",
+    "is_demo": true,
+    "creatives": [
+      "Cooling sleep pillow \u2014 synthetic Lifestyle concept 1",
+      "Cooling sleep pillow \u2014 synthetic Lifestyle concept 2",
+      "Cooling sleep pillow \u2014 synthetic Lifestyle concept 3",
+      "Cooling sleep pillow \u2014 synthetic Lifestyle concept 4",
+      "Cooling sleep pillow \u2014 synthetic Lifestyle concept 5"
+    ]
+  },
+  {
+    "source_id": "demo-11",
+    "platform": "instagram",
+    "advertiser": "Forma Office",
+    "title": "Daily hydration bottle",
+    "country": "DE",
+    "status": "active",
+    "landing_url": "https://formaoffice.example/products/11",
+    "source_url": "https://example.com/demo/ads/11",
+    "first_seen": "2026-09-04T12:00:00",
+    "last_seen": "2026-11-02T12:00:00",
+    "is_demo": true,
+    "creatives": [
+      "Daily hydration bottle \u2014 synthetic Wellness concept 1"
+    ]
+  },
+  {
+    "source_id": "demo-12",
+    "platform": "tiktok",
+    "advertiser": "Luma Living",
+    "title": "Foldable reading lamp",
+    "country": "DE",
+    "status": "active",
+    "landing_url": "https://lumaliving.example/products/12",
+    "source_url": "https://example.com/demo/ads/12",
+    "first_seen": "2026-08-30T12:00:00",
+    "last_seen": "2026-11-02T12:00:00",
+    "is_demo": true,
+    "creatives": [
+      "Foldable reading lamp \u2014 synthetic Home concept 1",
+      "Foldable reading lamp \u2014 synthetic Home concept 2"
+    ]
+  }
+]

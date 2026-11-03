@@ -147,3 +147,13 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# DROPSpy local runtime outputs
+.venv/
+.next/
+.ruff_cache/
+*.db
+*.tsbuildinfo
+__pycache__/
+*.py[cod]
+.pytest_cache/

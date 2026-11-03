@@ -1,0 +1,841 @@
+"use client";
+
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
+import {
+  Activity,
+  ArrowDownUp,
+  ArrowRight,
+  Bookmark,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  CircleHelp,
+  Compass,
+  ExternalLink,
+  Layers3,
+  LayoutDashboard,
+  LoaderCircle,
+  Radar,
+  Search,
+  Settings,
+  SlidersHorizontal,
+  Sparkles,
+  Target,
+  TrendingUp,
+  X,
+} from "lucide-react";
+
+type Metric = {
+  metric: string;
+  value: number;
+  maximum: number;
+  source: string;
+  evidence: string;
+  confidence: string;
+};
+type Ad = {
+  id: number;
+  title: string;
+  advertiser: string;
+  platform: string;
+  country: string;
+  landing_domain: string;
+  landing_url: string;
+  source_url: string;
+  first_seen: string;
+  last_seen: string;
+  status: string;
+  saved: boolean;
+  is_demo: boolean;
+  creatives: { text: string }[];
+  score: {
+    value: number;
+    confidence: string;
+    components: Metric[];
+    disclaimer: string;
+  };
+};
+type Overview = {
+  total_ads: number;
+  advertisers: number;
+  active_ads: number;
+  saved_ads: number;
+  mode: string;
+};
+type Competitor = {
+  advertiser: string;
+  ad_count: number;
+  first_seen: string;
+  last_seen: string;
+  source: string;
+};
+const navigation = [
+  { name: "Overview", icon: LayoutDashboard },
+  { name: "Meta Ads Search", icon: Search },
+  { name: "TikTok Ads Search", icon: Compass },
+  { name: "Product Intelligence", icon: Sparkles },
+  { name: "Competitor Tracker", icon: Target },
+  { name: "Saved Ads", icon: Bookmark },
+  { name: "Settings", icon: Settings },
+];
+const illustrations = [
+  "◒",
+  "≈",
+  "✳",
+  "◉",
+  "▤",
+  "⌁",
+  "✺",
+  "◍",
+  "▰",
+  "☁",
+  "◡",
+  "◐",
+];
+const date = (value: string) =>
+  new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+async function request<T>(url: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(`/api${url}`, options);
+  if (!response.ok)
+    throw new Error(
+      `API request failed (${response.status}). Check the API service.`,
+    );
+  return response.json();
+}
+
+export default function Dashboard() {
+  const [view, setView] = useState("Overview");
+  const [ads, setAds] = useState<Ad[]>([]);
+  const [overview, setOverview] = useState<Overview | null>(null);
+  const [competitors, setCompetitors] = useState<Competitor[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [selected, setSelected] = useState<Ad | null>(null);
+  const [history, setHistory] = useState<
+    { observed_at: string; status: string; source_url: string }[]
+  >([]);
+  const [filters, setFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [query, setQuery] = useState("");
+  const [country, setCountry] = useState("US");
+  const [platform, setPlatform] = useState("");
+  const [status, setStatus] = useState("");
+  const [advertiser, setAdvertiser] = useState("");
+  const [domain, setDomain] = useState("");
+  const [after, setAfter] = useState("");
+  const [before, setBefore] = useState("");
+  const [sort, setSort] = useState("newest");
+  const load = useCallback(
+    async (signal?: AbortSignal) => {
+      setLoading(true);
+      setError("");
+      const params = new URLSearchParams({
+        q: query,
+        country,
+        platform:
+          view === "Meta Ads Search"
+            ? ["facebook", "instagram", "reels"].includes(platform)
+              ? platform
+              : "meta"
+            : view === "TikTok Ads Search"
+              ? "tiktok"
+              : platform,
+        status,
+        advertiser,
+        domain,
+        sort,
+        page: String(page),
+        page_size: "9",
+        saved: String(view === "Saved Ads"),
+      });
+      if (after) params.set("detected_after", `${after}T00:00:00`);
+      if (before) params.set("detected_before", `${before}T23:59:59`);
+      try {
+        const [result, stats, rivals] = await Promise.all([
+          request<{ items: Ad[]; total: number }>(`/ads?${params}`, { signal }),
+          request<Overview>("/overview", { signal }),
+          request<Competitor[]>("/competitors", { signal }),
+        ]);
+        if (signal?.aborted) return;
+        setAds(result.items);
+        setTotal(result.total);
+        setOverview(stats);
+        setCompetitors(rivals);
+      } catch (e) {
+        if (!signal?.aborted)
+          setError(e instanceof Error ? e.message : "Unable to load ads");
+      } finally {
+        if (!signal?.aborted) setLoading(false);
+      }
+    },
+    [
+      query,
+      country,
+      platform,
+      status,
+      advertiser,
+      domain,
+      sort,
+      page,
+      view,
+      after,
+      before,
+    ],
+  );
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => void load(controller.signal), 200);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [load]);
+  async function save(ad: Ad) {
+    try {
+      await request(`/ads/${ad.id}/saved?saved=${!ad.saved}`, {
+        method: "PUT",
+      });
+      if (selected?.id === ad.id) setSelected({ ...ad, saved: !ad.saved });
+      await load();
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+  async function inspect(ad: Ad) {
+    setSelected(ad);
+    setHistory([]);
+    try {
+      setHistory(await request(`/ads/${ad.id}/observations`));
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+  function changeView(value: string) {
+    setView(value);
+    setPage(1);
+    setSelected(null);
+  }
+  const demo = overview?.mode === "demo";
+  return (
+    <div className="app-shell">
+      <aside className="sidebar">
+        <Link className="brand" href="/">
+          <span className="brand-mark">
+            <Radar size={25} />
+          </span>
+          <span>
+            DROPSpy<span className="brand-sub">RADAR</span>
+          </span>
+        </Link>
+        <div className="workspace">
+          <span className="workspace-icon">D</span>
+          <div>
+            Discovery workspace<small>Personal workspace</small>
+          </div>
+          <span className="version">v0.1</span>
+        </div>
+        <p className="nav-label">WORKSPACE</p>
+        <nav>
+          {navigation.map(({ name, icon: Icon }) => (
+            <button
+              key={name}
+              className={`nav-item ${view === name ? "selected" : ""}`}
+              onClick={() => changeView(name)}
+            >
+              <Icon size={18} />
+              {name}
+              {name === "Saved Ads" && (
+                <span className="nav-count">{overview?.saved_ads ?? 0}</span>
+              )}
+            </button>
+          ))}
+        </nav>
+        <div className="sidebar-note">
+          <div className="flex items-center gap-2">
+            <Activity size={17} />
+            <strong>Signals, with context.</strong>
+          </div>
+          <p>
+            Research the creative.
+            <br />
+            Understand the opportunity.
+          </p>
+          <span>
+            Transparent by design <ArrowRight size={13} />
+          </span>
+        </div>
+        <div className="sidebar-bottom">
+          <CircleHelp size={17} />
+          <span>Research responsibly</span>
+          <span className="avatar">DS</span>
+        </div>
+      </aside>
+      <div className="main-shell">
+        <header className="topbar">
+          <div className="breadcrumb">
+            Workspace <ChevronRight size={14} /> <strong>{view}</strong>
+          </div>
+          <div className="top-actions">
+            <span className="status-dot" />{" "}
+            {overview ? `${demo ? "Demo" : "Live"} workspace` : "Connecting"}
+            <span className="divider" />
+            <span className="avatar light">DS</span>
+          </div>
+        </header>
+        <main>
+          <div className="demo-banner">
+            <span>
+              <Sparkles size={16} />
+              <strong>
+                {demo
+                  ? "You’re exploring the demo workspace"
+                  : "Research workspace"}
+              </strong>
+              <span className="banner-copy">
+                {demo
+                  ? "All ads and signals are synthetic sample data. No live collection is running."
+                  : "Live adapters are disabled until an authorized source is configured."}
+              </span>
+            </span>
+            <span className="demo-tag">
+              {demo ? "DEMO DATA" : "NO LIVE COLLECTOR"}
+            </span>
+          </div>
+          <div className="page-heading">
+            <div>
+              <div className="eyebrow">
+                YOUR NEXT PRODUCT STARTS WITH A SIGNAL
+              </div>
+              <h1>
+                {view === "Overview"
+                  ? "Discover what’s gaining traction."
+                  : view}
+              </h1>
+              <p>
+                {view === "Overview"
+                  ? "Explore ads, spot patterns, and turn early signals into your next big idea."
+                  : "Explore transparent ad observations. Every signal includes its source and confidence."}
+              </p>
+            </div>
+            <button
+              className="secondary"
+              onClick={() => changeView("Saved Ads")}
+            >
+              <Bookmark size={16} /> Your collection <ArrowRight size={16} />
+            </button>
+          </div>
+          {view === "Settings" ? (
+            <section className="settings-panel">
+              <h2>Workspace settings</h2>
+              <p>
+                Mode: <strong>{overview?.mode ?? "Unavailable"}</strong>
+              </p>
+              <p>Market priority: United States → European Union</p>
+              <p>
+                Meta & TikTok live collectors: <strong>disabled</strong>. An
+                authorized public source or licensed API is required.
+              </p>
+              <p>
+                Demo mode requires no platform credentials. Configure MODE and
+                DATABASE_URL on the API server. No credentials are stored in
+                this dashboard.
+              </p>
+              <p>
+                This MVP is for a trusted local workspace; authentication is
+                required before public deployment.
+              </p>
+            </section>
+          ) : (
+            <>
+              {view === "Overview" && (
+                <div className="stats-grid">
+                  {[
+                    {
+                      label: "Ads in your radar",
+                      value: overview?.total_ads,
+                      icon: Layers3,
+                      note: "Across all demo markets",
+                    },
+                    {
+                      label: "Active observations",
+                      value: overview?.active_ads,
+                      icon: Activity,
+                      note: "Status from sample fixtures",
+                    },
+                    {
+                      label: "Advertisers discovered",
+                      value: overview?.advertisers,
+                      icon: Target,
+                      note: "Unique names in this dataset",
+                    },
+                    {
+                      label: "Saved to collection",
+                      value: overview?.saved_ads,
+                      icon: Bookmark,
+                      note: "Your research shortlist",
+                    },
+                  ].map(({ label, value, icon: Icon, note }) => (
+                    <div className="stat-card" key={label}>
+                      <div className="stat-top">
+                        {label}
+                        <Icon size={18} />
+                      </div>
+                      <strong>{value ?? "—"}</strong>
+                      <small>
+                        <span className="tiny-dot" />
+                        {note}
+                      </small>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {view === "Competitor Tracker" ? (
+                <section className="settings-panel">
+                  <h2>Advertiser observations</h2>
+                  <p>
+                    Dataset summary; scheduled competitor monitoring is planned.
+                  </p>
+                  <div className="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Advertiser</th>
+                          <th>Ads</th>
+                          <th>First seen</th>
+                          <th>Last seen</th>
+                          <th>Source</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {competitors.map((c) => (
+                          <tr key={c.advertiser}>
+                            <td>
+                              <button
+                                className="text-button"
+                                onClick={() => {
+                                  setAdvertiser(c.advertiser);
+                                  changeView("Meta Ads Search");
+                                }}
+                              >
+                                {c.advertiser}
+                              </button>
+                            </td>
+                            <td>{c.ad_count}</td>
+                            <td>{date(c.first_seen)}</td>
+                            <td>{date(c.last_seen)}</td>
+                            <td>{c.source}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              ) : (
+                <>
+                  <section className="explore-heading">
+                    <div>
+                      <h2>
+                        {view === "Product Intelligence"
+                          ? "Product signals"
+                          : view === "Saved Ads"
+                            ? "Your saved ads"
+                            : "Explore your radar"}
+                        <span className="count-pill">{total} ads</span>
+                      </h2>
+                      <p>
+                        {view === "Product Intelligence"
+                          ? "Open an ad for score weights, evidence and confidence. Score is a research heuristic."
+                          : "A closer look at the creatives and products worth researching."}
+                      </p>
+                    </div>
+                    <span className="market-label">
+                      ◎ US first. Global next.
+                    </span>
+                  </section>
+                  <section className="search-panel">
+                    <div className="search-row">
+                      <label className="search-input">
+                        <Search size={19} />
+                        <input
+                          aria-label="Search ads"
+                          placeholder="Search products, keywords, or ideas…"
+                          value={query}
+                          onChange={(e) => {
+                            setQuery(e.target.value);
+                            setPage(1);
+                          }}
+                        />
+                        <span>⌘ K</span>
+                      </label>
+                      <select
+                        aria-label="Country"
+                        value={country}
+                        onChange={(e) => {
+                          setCountry(e.target.value);
+                          setPage(1);
+                        }}
+                      >
+                        <option value="US">🇺🇸 United States</option>
+                        <option value="">All countries</option>
+                        <option value="DE">🇩🇪 Germany</option>
+                      </select>
+                      <button
+                        className={`secondary ${filters ? "pressed" : ""}`}
+                        onClick={() => setFilters(!filters)}
+                        aria-expanded={filters}
+                      >
+                        <SlidersHorizontal size={16} /> Filters
+                      </button>
+                    </div>
+                    {filters && (
+                      <div className="advanced-filters">
+                        <label>
+                          Advertiser
+                          <input
+                            value={advertiser}
+                            onChange={(e) => {
+                              setAdvertiser(e.target.value);
+                              setPage(1);
+                            }}
+                            placeholder="Advertiser name"
+                          />
+                        </label>
+                        <label>
+                          Landing domain
+                          <input
+                            value={domain}
+                            onChange={(e) => {
+                              setDomain(e.target.value);
+                              setPage(1);
+                            }}
+                            placeholder="brand.example"
+                          />
+                        </label>
+                        <label>
+                          Status
+                          <select
+                            value={status}
+                            onChange={(e) => {
+                              setStatus(e.target.value);
+                              setPage(1);
+                            }}
+                          >
+                            <option value="">All statuses</option>
+                            <option>active</option>
+                            <option>inactive</option>
+                            <option>unknown</option>
+                          </select>
+                        </label>
+                        <label>
+                          Detected after
+                          <input
+                            type="date"
+                            value={after}
+                            onChange={(e) => {
+                              setAfter(e.target.value);
+                              setPage(1);
+                            }}
+                          />
+                        </label>
+                        <label>
+                          Detected before
+                          <input
+                            type="date"
+                            value={before}
+                            onChange={(e) => {
+                              setBefore(e.target.value);
+                              setPage(1);
+                            }}
+                          />
+                        </label>
+                      </div>
+                    )}
+                    <div className="filter-bottom">
+                      <div className="platform-tabs">
+                        {[
+                          { label: "All platforms", value: "" },
+                          { label: "Facebook", value: "facebook" },
+                          { label: "Instagram", value: "instagram" },
+                          { label: "Reels", value: "reels" },
+                          { label: "TikTok", value: "tiktok" },
+                        ]
+                          .filter((p) =>
+                            view === "Meta Ads Search"
+                              ? p.value !== "tiktok"
+                              : view === "TikTok Ads Search"
+                                ? p.value === "tiktok"
+                                : true,
+                          )
+                          .map((p) => (
+                            <button
+                              key={p.value}
+                              className={
+                                platform === p.value ||
+                                view === "TikTok Ads Search"
+                                  ? "active"
+                                  : ""
+                              }
+                              onClick={() => {
+                                setPlatform(p.value);
+                                setPage(1);
+                              }}
+                            >
+                              {p.label}
+                            </button>
+                          ))}
+                      </div>
+                      <label className="sort-label">
+                        <ArrowDownUp size={14} />
+                        <select
+                          aria-label="Sort ads"
+                          value={sort}
+                          onChange={(e) => {
+                            setSort(e.target.value);
+                            setPage(1);
+                          }}
+                        >
+                          <option value="newest">Newest discovered</option>
+                          <option value="oldest">Oldest discovered</option>
+                          <option value="advertiser">Advertiser A–Z</option>
+                        </select>
+                      </label>
+                    </div>
+                  </section>
+                  {error && (
+                    <div role="alert" className="error-panel">
+                      {error}
+                      <button onClick={() => void load()}>Retry</button>
+                    </div>
+                  )}
+                  {loading ? (
+                    <div className="empty-state">
+                      <LoaderCircle className="animate-spin" /> Loading
+                      observations…
+                    </div>
+                  ) : ads.length === 0 ? (
+                    <div className="empty-state">
+                      <Search />
+                      <h2>No ads found</h2>
+                      <p>
+                        Try another filter or save ads to build your collection.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="ad-grid">
+                      {ads.map((ad) => (
+                        <article className="ad-card" key={ad.id}>
+                          <div className="card-header">
+                            <span
+                              className={`advertiser-avatar art-${ad.id % 6}`}
+                            >
+                              {ad.advertiser.slice(0, 1)}
+                            </span>
+                            <div>
+                              <strong>{ad.advertiser}</strong>
+                              <small>
+                                <span className="platform-dot" />
+                                {ad.platform} <span>·</span> {ad.country}
+                              </small>
+                            </div>
+                            <button
+                              aria-label={`${ad.saved ? "Unsave" : "Save"} ${ad.title}`}
+                              className={`save-button ${ad.saved ? "is-saved" : ""}`}
+                              onClick={() => void save(ad)}
+                            >
+                              <Bookmark
+                                size={18}
+                                fill={ad.saved ? "currentColor" : "none"}
+                              />
+                            </button>
+                          </div>
+                          <button
+                            className={`creative-art art-${ad.id % 6}`}
+                            onClick={() => void inspect(ad)}
+                            aria-label={`Inspect ${ad.title}`}
+                          >
+                            <span className="art-label">
+                              {ad.is_demo ? "SAMPLE CREATIVE" : "TEXT CREATIVE"}
+                            </span>
+                            <span className="art-shape">
+                              {
+                                illustrations[
+                                  (ad.id - 1) % illustrations.length
+                                ]
+                              }
+                            </span>
+                            <div className="art-copy">
+                              <span>
+                                Little things.
+                                <br />
+                                Everyday better.
+                              </span>
+                              <small>{ad.title}</small>
+                            </div>
+                            <span className="creative-badge">
+                              {ad.creatives.length} creative
+                              {ad.creatives.length === 1 ? "" : "s"}
+                            </span>
+                          </button>
+                          <div className="card-body">
+                            <div className="card-status">
+                              <span className={`activity-label ${ad.status}`}>
+                                <span />
+                                {ad.status}
+                              </span>
+                              <span>
+                                {Math.floor(
+                                  (new Date(ad.last_seen).getTime() -
+                                    new Date(ad.first_seen).getTime()) /
+                                    86400000,
+                                )}
+                                d observed
+                              </span>
+                            </div>
+                            <button
+                              className="ad-title"
+                              onClick={() => void inspect(ad)}
+                            >
+                              {ad.title}
+                            </button>
+                            <div className="landing-domain">
+                              {ad.landing_domain}
+                              <ExternalLink size={11} />
+                            </div>
+                            <div className="card-footer">
+                              <button
+                                className="score"
+                                onClick={() => void inspect(ad)}
+                                title="View score methodology"
+                              >
+                                <TrendingUp size={14} />
+                                {ad.score.value}
+                                <span>Signal score</span>
+                              </button>
+                              <span className="data-label">
+                                {ad.is_demo ? "DEMO" : "OBSERVED"}
+                              </span>
+                            </div>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  )}
+                  <div className="pagination">
+                    <span>
+                      Showing {total === 0 ? 0 : (page - 1) * 9 + 1}–
+                      {Math.min(page * 9, total)} of {total} ads
+                    </span>
+                    <div>
+                      <button
+                        aria-label="Previous page"
+                        disabled={page === 1}
+                        onClick={() => setPage(page - 1)}
+                      >
+                        <ChevronLeft size={16} />
+                      </button>
+                      <span>Page {page}</span>
+                      <button
+                        aria-label="Next page"
+                        disabled={page * 9 >= total}
+                        onClick={() => setPage(page + 1)}
+                      >
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+          <footer className="page-footer">
+            <span>
+              <Radar size={14} /> DROPSpy Radar <span>v0.1</span>
+            </span>
+            <span>Better research. Informed decisions.</span>
+          </footer>
+        </main>
+      </div>
+      {selected && (
+        <div className="modal-backdrop" onClick={() => setSelected(null)}>
+          <section
+            className="detail-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Ad intelligence details"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="close-button"
+              aria-label="Close details"
+              onClick={() => setSelected(null)}
+            >
+              <X />
+            </button>
+            <span className="demo-tag">
+              {selected.is_demo ? "SYNTHETIC DEMO" : "OBSERVED DATA"}
+            </span>
+            <h2>{selected.title}</h2>
+            <p>
+              {selected.advertiser} · {selected.platform} · {selected.country}
+            </p>
+            <h3>Winning Product Score: {selected.score.value}/100</h3>
+            <p className="muted">
+              {selected.score.disclaimer} Confidence:{" "}
+              {selected.score.confidence}.
+            </p>
+            {selected.score.components.map((m) => (
+              <div className="metric" key={m.metric}>
+                <strong>
+                  {m.metric.replaceAll("_", " ")}{" "}
+                  <span>
+                    {m.value}/{m.maximum}
+                  </span>
+                </strong>
+                <p>{m.evidence}</p>
+                <small>
+                  Source: {m.source} · Confidence: {m.confidence}
+                </small>
+              </div>
+            ))}
+            <h3>Creative text</h3>
+            {selected.creatives.map((c, i) => (
+              <p key={i}>{c.text}</p>
+            ))}
+            <h3>Observation history</h3>
+            {history.map((h, i) => (
+              <p key={i}>
+                {date(h.observed_at)} · {h.status} ·{" "}
+                <a href={h.source_url} target="_blank" rel="noreferrer">
+                  source <ExternalLink size={12} />
+                </a>
+              </p>
+            ))}
+            <p>
+              First seen {date(selected.first_seen)} · Last seen{" "}
+              {date(selected.last_seen)}
+            </p>
+            <div className="detail-actions">
+              <a href={selected.source_url} target="_blank" rel="noreferrer">
+                Source URL <ExternalLink size={14} />
+              </a>
+              <a href={selected.landing_url} target="_blank" rel="noreferrer">
+                Landing URL <ExternalLink size={14} />
+              </a>
+              <button className="primary" onClick={() => void save(selected)}>
+                {selected.saved ? <Check size={16} /> : <Bookmark size={16} />}{" "}
+                {selected.saved ? "Saved" : "Save ad"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+    </div>
+  );
+}
