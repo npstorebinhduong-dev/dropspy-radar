@@ -1,0 +1,56 @@
+{
+  "observed_at": "2026-11-03T16:51:03.458Z",
+  "runtime": {
+    "observations_current": true,
+    "network_state": "enforced",
+    "network_mode": "restricted",
+    "spec_revision": "1",
+    "observed_spec_revision": "1",
+    "source_config_version_id": "d9e7973832d8929544177f35c731b41639ac7176c8e6e8de18a415ef9270ae71~cecfgver_6ae997eee80c81a1b957eeab3572ec4a",
+    "custom_allowed_hosts": [],
+    "target_hosts": [
+      {
+        "host": "www.facebook.com",
+        "effectively_allowed": false
+      },
+      {
+        "host": "developers.facebook.com",
+        "effectively_allowed": false
+      },
+      {
+        "host": "apify.com",
+        "effectively_allowed": false
+      },
+      {
+        "host": "docs.apify.com",
+        "effectively_allowed": false
+      },
+      {
+        "host": "ads.tiktok.com",
+        "effectively_allowed": false
+      },
+      {
+        "host": "developers.tiktok.com",
+        "effectively_allowed": false
+      }
+    ],
+    "configured_secrets_count": 0,
+    "outbound_identities_count": 0
+  },
+  "draft": {
+    "revision": 8,
+    "base_version_id": "d9e7973832d8929544177f35c731b41639ac7176c8e6e8de18a415ef9270ae71~cecfgver_6ae997eee80c81a1b957eeab3572ec4a",
+    "custom_hosts": [
+      "ads.tiktok.com",
+      "api.github.com",
+      "apify.com",
+      "developers.facebook.com",
+      "developers.tiktok.com",
+      "docs.apify.com",
+      "facebook.com",
+      "www.facebook.com",
+      "www.tiktok.com"
+    ]
+  },
+  "interpretation": "Desired draft contains research hosts; observed enforced instance has no custom hosts. Publication/application to this instance is not evidenced; publication history itself was not available."
+}

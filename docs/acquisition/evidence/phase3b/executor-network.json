@@ -1,0 +1,49 @@
+{
+  "policy_version": 1,
+  "vpn_configured": false,
+  "http_policy_type": "restricted",
+  "target_host_rules": {
+    "www.facebook.com": false,
+    "developers.facebook.com": false,
+    "apify.com": false,
+    "docs.apify.com": false
+  },
+  "proxy_environment": {
+    "HTTP_PROXY": {
+      "present": true,
+      "scheme": "http",
+      "host": "proxy",
+      "port": 8080,
+      "credentials_present": false
+    },
+    "HTTPS_PROXY": {
+      "present": true,
+      "scheme": "http",
+      "host": "proxy",
+      "port": 8080,
+      "credentials_present": false
+    },
+    "http_proxy": {
+      "present": true,
+      "scheme": "http",
+      "host": "proxy",
+      "port": 8080,
+      "credentials_present": false
+    },
+    "https_proxy": {
+      "present": true,
+      "scheme": "http",
+      "host": "proxy",
+      "port": 8080,
+      "credentials_present": false
+    }
+  },
+  "trust_environment_presence": {
+    "SSL_CERT_FILE": true,
+    "REQUESTS_CA_BUNDLE": true
+  },
+  "no_proxy_exempts_target": {
+    "www.facebook.com": false,
+    "apify.com": false
+  }
+}

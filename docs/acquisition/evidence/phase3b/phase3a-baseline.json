@@ -1,0 +1,101 @@
+[
+  {
+    "id": "meta_public",
+    "url": "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=US&q=solar%20garden%20lights&search_type=keyword_unordered",
+    "observed_at": "2026-11-03T12:39:58.305409+00:00",
+    "purpose": "public documentation/access probe, not an ad pilot",
+    "http_status": null,
+    "error_type": "proxy_connect_403",
+    "duration_ms": 43
+  },
+  {
+    "id": "meta_official",
+    "url": "https://developers.facebook.com/docs/graph-api/reference/ads_archive/",
+    "observed_at": "2026-11-03T12:39:58.348262+00:00",
+    "purpose": "public documentation/access probe, not an ad pilot",
+    "http_status": null,
+    "error_type": "proxy_connect_403",
+    "duration_ms": 12
+  },
+  {
+    "id": "meta_terms",
+    "url": "https://www.facebook.com/legal/automated_data_collection_terms",
+    "observed_at": "2026-11-03T12:39:58.360025+00:00",
+    "purpose": "public documentation/access probe, not an ad pilot",
+    "http_status": null,
+    "error_type": "proxy_connect_403",
+    "duration_ms": 9
+  },
+  {
+    "id": "tiktok_top",
+    "url": "https://ads.tiktok.com/business/creativecenter/inspiration/topads/pc/en?region=US",
+    "observed_at": "2026-11-03T12:39:58.368910+00:00",
+    "purpose": "public documentation/access probe, not an ad pilot",
+    "http_status": null,
+    "error_type": "proxy_connect_403",
+    "duration_ms": 13
+  },
+  {
+    "id": "tiktok_official",
+    "url": "https://developers.tiktok.com/doc/commercial-content-api-getting-started",
+    "observed_at": "2026-11-03T12:39:58.381787+00:00",
+    "purpose": "public documentation/access probe, not an ad pilot",
+    "http_status": null,
+    "error_type": "proxy_connect_403",
+    "duration_ms": 10
+  },
+  {
+    "id": "locaihost",
+    "url": "https://apify.com/locaihost/facebook-ad-library",
+    "observed_at": "2026-11-03T12:39:58.391789+00:00",
+    "purpose": "public documentation/access probe, not an ad pilot",
+    "http_status": null,
+    "error_type": "proxy_connect_403",
+    "duration_ms": 5
+  },
+  {
+    "id": "steadyfetch",
+    "url": "https://apify.com/steadyfetch/facebook-ad-library-scraper",
+    "observed_at": "2026-11-03T12:39:58.396713+00:00",
+    "purpose": "public documentation/access probe, not an ad pilot",
+    "http_status": null,
+    "error_type": "proxy_connect_403",
+    "duration_ms": 4
+  },
+  {
+    "id": "silentflow",
+    "url": "https://apify.com/silentflow/tiktok-creative-ads-scraper",
+    "observed_at": "2026-11-03T12:39:58.401187+00:00",
+    "purpose": "public documentation/access probe, not an ad pilot",
+    "http_status": null,
+    "error_type": "proxy_connect_403",
+    "duration_ms": 5
+  },
+  {
+    "id": "data_xplorer",
+    "url": "https://apify.com/data_xplorer/tiktok-ads-scraper",
+    "observed_at": "2026-11-03T12:39:58.405868+00:00",
+    "purpose": "public documentation/access probe, not an ad pilot",
+    "http_status": null,
+    "error_type": "proxy_connect_403",
+    "duration_ms": 6
+  },
+  {
+    "id": "curious_coder",
+    "url": "https://apify.com/curious_coder/facebook-ads-library-scraper",
+    "observed_at": "2026-11-03T12:39:58.412044+00:00",
+    "purpose": "public documentation/access probe, not an ad pilot",
+    "http_status": null,
+    "error_type": "proxy_connect_403",
+    "duration_ms": 6
+  },
+  {
+    "id": "apify_dataset_docs",
+    "url": "https://docs.apify.com/api/v2/dataset-items-get",
+    "observed_at": "2026-11-03T12:39:58.418132+00:00",
+    "purpose": "public documentation/access probe, not an ad pilot",
+    "http_status": null,
+    "error_type": "proxy_connect_403",
+    "duration_ms": 6
+  }
+]

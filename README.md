@@ -71,3 +71,5 @@ Upload/import never fetches external URLs or evaluates CSV formulas. Exact repla
 ## Phase 3A acquisition research
 
 [Adapter/benchmark run guide](docs/acquisition/README.md) · [source discovery](docs/acquisition/SOURCE_DISCOVERY_REPORT.md) · [pilot results](docs/acquisition/US_ADS_PILOT_RESULTS.md). Live sources remain disabled pending verified access/rights; runnable fixture benchmarks exercise the existing v0.2 intake path without claiming real inventory.
+
+[Phase 3B network recheck and first-real-source outcome](docs/acquisition/PHASE3B_FIRST_REAL_SOURCE.md): actual applied-policy/proxy evidence and remaining blocker; no live collection success claimed.
