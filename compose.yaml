@@ -16,6 +16,7 @@ services:
     build: ./apps/api
     environment:
       MODE: ${MODE:-demo}
+      IMPORT_WORKER_ENABLED: ${IMPORT_WORKER_ENABLED:-1}
       ENABLE_META_PUBLIC_COLLECTION: ${ENABLE_META_PUBLIC_COLLECTION:-0}
       DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://dropspy:dropspy@db:5432/dropspy}
     ports:

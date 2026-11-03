@@ -1159,3 +1159,201 @@ th {
   padding-bottom: 14px;
   border-bottom: 1px solid #e7eaf0;
 }
+.data-workspace {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 22px;
+}
+.data-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.data-heading p,
+.import-form > .muted {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.data-route-links {
+  display: flex;
+  gap: 15px;
+  font-size: 11px;
+  color: var(--green);
+}
+.data-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+  margin: 20px 0;
+}
+.data-tabs button {
+  padding: 12px;
+  font-size: 12px;
+}
+.data-tabs button.active {
+  border-bottom: 2px solid var(--green);
+  color: var(--green);
+  font-weight: 700;
+}
+.source-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.source-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+}
+.source-card h3 {
+  margin: 0 0 10px;
+}
+.source-card dt {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 12px;
+}
+.source-card dd {
+  font-size: 11px;
+  line-height: 1.7;
+  margin: 4px 0;
+  overflow-wrap: anywhere;
+}
+.source-card .secondary {
+  margin-top: 12px;
+}
+.import-fields,
+.mapping-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.import-form label,
+.mapping-grid label {
+  font-size: 11px;
+  color: #66778a;
+}
+.import-form input:not([type="checkbox"]),
+.import-form select {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 11px;
+  margin: 7px 0 12px;
+  background: #fff;
+  font-size: 12px;
+}
+.file-upload {
+  display: block;
+  padding: 20px;
+  border: 1px dashed #a5b5a9;
+  border-radius: 8px;
+  margin: 18px 0;
+}
+.rights-field {
+  display: block;
+}
+.attestation {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-bottom: 20px;
+  line-height: 1.7;
+}
+.preview-panel {
+  padding: 18px;
+  background: #f7f9f8;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-top: 20px;
+}
+.preview-panel p {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.preview-panel pre,
+.raw-evidence pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 260px;
+  overflow: auto;
+  font-size: 10px;
+  background: #eef2ef;
+  padding: 12px;
+  border-radius: 4px;
+}
+.mapping-grid {
+  margin: 20px 0;
+}
+.row-error {
+  color: #a34e36;
+}
+.history-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.import-history td {
+  font-size: 11px;
+}
+.import-history td small {
+  display: block;
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.import-history td button,
+.import-history td a {
+  display: block;
+  margin-top: 8px;
+}
+.import-history progress {
+  width: 90px;
+  accent-color: var(--green);
+}
+.import-notice {
+  padding: 12px;
+  background: #eef5ef;
+  color: #436f51;
+  border-radius: 5px;
+  font-size: 12px;
+}
+.raw-evidence {
+  margin: 12px 0;
+  border: 1px solid var(--line);
+  padding: 12px;
+  border-radius: 6px;
+}
+.raw-evidence summary {
+  font-size: 11px;
+  cursor: pointer;
+}
+.raw-evidence h4 {
+  font-size: 12px;
+  margin: 12px 0;
+}
+.data-label.label-ready {
+  background: #edf5ed;
+  color: #397659;
+}
+@media (max-width: 850px) {
+  .source-grid,
+  .mapping-grid,
+  .import-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .source-grid,
+  .mapping-grid,
+  .import-fields {
+    grid-template-columns: 1fr;
+  }
+  .data-workspace {
+    padding: 14px;
+  }
+}

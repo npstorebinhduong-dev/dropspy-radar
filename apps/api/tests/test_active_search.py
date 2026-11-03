@@ -139,6 +139,11 @@ def test_public_discovery_gate_and_mocked_live_flow(client, session, monkeypatch
     assert client.post("/discovery/meta", json={"q": "portable blender"}).status_code == 409
     monkeypatch.setattr(main, "MODE", "live")
     monkeypatch.setenv("ENABLE_META_PUBLIC_COLLECTION", "1")
+    from app.models import Source
+
+    source = session.get(Source, "meta-ad-library")
+    source.approval_status, source.live_enabled, source.state = "approved", True, "ready"
+    session.commit()
     monkeypatch.setattr(main, "_last_discovery", 0)
     monkeypatch.setattr(main, "fetch_public_page", lambda q, country: parse_public_page(public_fixture(), country))
     result = client.post("/discovery/meta", json={"q": "portable blender", "country": "US"})

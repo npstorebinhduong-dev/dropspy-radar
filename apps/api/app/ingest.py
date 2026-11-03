@@ -4,16 +4,16 @@ import time
 from datetime import timezone
 from urllib.parse import urlparse
 
-from sqlalchemy import select
+from sqlalchemy import case
 
 from .collectors.base import Collector
 from .models import Ad, Creative, Observation
+from .sources import insert_for
 
 logger = logging.getLogger(__name__)
 
 
 def collect_with_retry(collector: Collector, sleep=time.sleep):
-    # Only transient transport failures retry. Access/validation failures fail immediately.
     for attempt in range(3):
         try:
             return collector.collect()
@@ -24,38 +24,51 @@ def collect_with_retry(collector: Collector, sleep=time.sleep):
             sleep(2**attempt)
 
 
+def naive_utc(value):
+    return value.astimezone(timezone.utc).replace(tzinfo=None) if value.tzinfo else value
+
+
+def upsert_ad(session, values, creatives):
+    """Unique constraint + ON CONFLICT serializes competing writers on PostgreSQL."""
+    stmt = insert_for(session, Ad).values(**values)
+    incoming = stmt.excluded
+    newer = incoming.last_seen >= Ad.last_seen
+    changes = {
+        key: case((newer, getattr(incoming, key)), else_=getattr(Ad, key)) for key in values if key not in {"source_id", "platform", "is_demo", "saved", "first_seen", "last_seen"}
+    }
+    changes["first_seen"] = case((incoming.first_seen < Ad.first_seen, incoming.first_seen), else_=Ad.first_seen)
+    changes["last_seen"] = case((incoming.last_seen > Ad.last_seen, incoming.last_seen), else_=Ad.last_seen)
+    ad_id = session.scalar(stmt.on_conflict_do_update(index_elements=["platform", "source_id", "is_demo"], set_=changes).returning(Ad.id))
+    session.execute(
+        insert_for(session, Observation)
+        .values(ad_id=ad_id, observed_at=values["last_seen"], status=values["status"], source_url=values["source_url"])
+        .on_conflict_do_nothing(index_elements=["ad_id", "observed_at"])
+    )
+    for content in creatives:
+        data = content if isinstance(content, dict) else {"text": content, "type": "text"}
+        import json
+
+        # Preserve the v0.1 text identity so upgrading an existing DB does not duplicate its creatives.
+        fingerprint_input = data["text"] if set(data) <= {"text", "type", "media_url"} and not data.get("media_url") else json.dumps(data, sort_keys=True, ensure_ascii=False)
+        fingerprint = hashlib.sha256(fingerprint_input.encode()).hexdigest()
+        session.execute(insert_for(session, Creative).values(ad_id=ad_id, fingerprint=fingerprint, content=data).on_conflict_do_nothing(index_elements=["ad_id", "fingerprint"]))
+    session.expire_all()
+    return ad_id
+
+
 def ingest(session, records, *, commit=True):
     for record in records:
-        ad = session.scalar(select(Ad).where(Ad.platform == record.platform, Ad.source_id == record.source_id, Ad.is_demo == record.is_demo))
-        first = record.first_seen.astimezone(timezone.utc).replace(tzinfo=None) if record.first_seen.tzinfo else record.first_seen
-        last = record.last_seen.astimezone(timezone.utc).replace(tzinfo=None) if record.last_seen.tzinfo else record.last_seen
-        if ad is None:
-            ad = Ad(
-                **record.model_dump(exclude={"creatives", "landing_url", "source_url", "first_seen", "last_seen"}),
-                landing_url=str(record.landing_url),
-                landing_domain=urlparse(str(record.landing_url)).hostname or "",
-                source_url=str(record.source_url),
-                first_seen=first,
-                last_seen=last,
-            )
-            session.add(ad)
-            session.flush()
-        else:
-            if last >= ad.last_seen:
-                for key in ("status", "title", "advertiser", "country"):
-                    setattr(ad, key, getattr(record, key))
-                ad.landing_url = str(record.landing_url)
-                ad.landing_domain = urlparse(str(record.landing_url)).hostname or ""
-                ad.source_url = str(record.source_url)
-            ad.first_seen = min(ad.first_seen, first)
-            ad.last_seen = max(ad.last_seen, last)
-        if not session.scalar(select(Observation).where(Observation.ad_id == ad.id, Observation.observed_at == last)):
-            session.add(Observation(ad_id=ad.id, observed_at=last, status=record.status, source_url=str(record.source_url)))
-        for content in record.creatives:
-            fingerprint = hashlib.sha256(content.encode()).hexdigest()
-            if not session.scalar(select(Creative).where(Creative.ad_id == ad.id, Creative.fingerprint == fingerprint)):
-                session.add(Creative(ad_id=ad.id, fingerprint=fingerprint, content={"text": content, "type": "text"}))
-                session.flush()
+        values = record.model_dump(exclude={"creatives", "landing_url", "source_url", "first_seen", "last_seen"})
+        values.update(
+            landing_url=str(record.landing_url),
+            landing_domain=urlparse(str(record.landing_url)).hostname or "",
+            source_url=str(record.source_url),
+            first_seen=naive_utc(record.first_seen),
+            last_seen=naive_utc(record.last_seen),
+        )
+        # Legacy callers remain isolated; only a synthetic fixture has known provenance.
+        values.update(registry_source_id="demo" if record.is_demo else "legacy-unknown", corpus="demo" if record.is_demo else "unknown")
+        upsert_ad(session, values, record.creatives)
     if commit:
         session.commit()
     else:

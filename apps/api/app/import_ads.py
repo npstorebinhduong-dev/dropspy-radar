@@ -77,13 +77,35 @@ def main():
         dataset = AuthorizedDataset.model_validate_json(payload)
     except ValueError:
         parser.error("Invalid dataset. Check required fields, rights attestation, real-data flag, IDs and observation timestamps.")
-    Base.metadata.create_all(engine)
-    try:
-        with Session.begin() as session:
-            result = import_dataset(session, dataset)
-    except ValueError:
-        parser.error("Source rights reference conflicts with an existing import; transaction rolled back.")
-    print(json.dumps(result))
+    from .data_import import ImportOptions, create_preview, process_job, start_import, job_summary
+    from .migrate import upgrade_database
+    from .sources import seed_sources
+
+    if engine.dialect.name == "postgresql":
+        upgrade_database()
+    else:
+        Base.metadata.create_all(engine)
+    with Session() as session:
+        seed_sources(session)
+        session.commit()
+        options = ImportOptions(
+            source_id="authorized-file",
+            dataset_id=dataset.source_id,
+            data_label="REAL",
+            corpus="paid_ad",
+            rights_reference=dataset.rights_reference,
+            permission_attested=dataset.permission_attested,
+        )
+        preview = create_preview(session, json.dumps({"records": [row.model_dump(mode="json") for row in dataset.records]}).encode(), "legacy-cli.json", options)
+        if preview["error_count"]:
+            parser.error("Import validation failed; inspect the preview in Import History")
+        start_import(session, preview["id"])
+    process_job(preview["id"])
+    from .models import ImportJob
+
+    with Session() as session:
+        result = job_summary(session.get(ImportJob, preview["id"]))
+    print(json.dumps(result, default=str))
 
 
 if __name__ == "__main__":

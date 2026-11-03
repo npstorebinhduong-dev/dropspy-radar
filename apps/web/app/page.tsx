@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import DataWorkspace from "../components/DataWorkspace";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Activity,
@@ -36,6 +37,10 @@ type Metric = {
 };
 type Ad = {
   id: number;
+  data_label: "REAL" | "DEMO" | "UNKNOWN";
+  source_name: string;
+  registry_source_id: string | null;
+  corpus: string;
   title: string;
   advertiser: string;
   platform: string;
@@ -147,6 +152,21 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 }
 
 export default function Dashboard() {
+  const [dataMode, setDataMode] = useState<"demo" | "real">("demo");
+  const [sourceFilter, setSourceFilter] = useState("");
+  const [evidence, setEvidence] = useState<{
+    items: {
+      id: number;
+      source_id: string;
+      raw_data: Record<string, unknown>;
+      normalized_data: Record<string, unknown>;
+      observed_at: string;
+      rights_reference: string;
+      run_id: string;
+    }[];
+    total: number;
+    page: number;
+  } | null>(null);
   const [view, setView] = useState("Overview");
   const [ads, setAds] = useState<Ad[]>([]);
   const [overview, setOverview] = useState<Overview | null>(null);
@@ -182,7 +202,10 @@ export default function Dashboard() {
       setError("");
       const params = new URLSearchParams({
         q: query,
-        country,
+        data_mode: dataMode,
+        source: sourceFilter,
+        country: country === "EU" ? "" : country,
+        market: country === "EU" ? "EU" : "",
         platform:
           view === "Meta Ads Search"
             ? ["facebook", "instagram", "reels"].includes(platform)
@@ -202,12 +225,14 @@ export default function Dashboard() {
       });
       if (recentDays) params.set("observed_within_days", recentDays);
       if (after) params.set("detected_after", `${after}T00:00:00`);
-      if (before) params.set("detected_before", `${before}T23:59:59`);
+      if (before) params.set("detected_before", `${before}T23:59:59.999999`);
       try {
         const [result, stats, rivals] = await Promise.all([
           request<{ items: Ad[]; total: number }>(`/ads?${params}`, { signal }),
-          request<Overview>("/overview", { signal }),
-          request<Competitor[]>("/competitors", { signal }),
+          request<Overview>(`/overview?data_mode=${dataMode}`, { signal }),
+          request<Competitor[]>(`/competitors?data_mode=${dataMode}`, {
+            signal,
+          }),
         ]);
         if (signal?.aborted) return;
         setAds(result.items);
@@ -235,8 +260,22 @@ export default function Dashboard() {
       before,
       recentDays,
       minDays,
+      dataMode,
+      sourceFilter,
     ],
   );
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (
+        new URLSearchParams(window.location.search).get("data_mode") === "real"
+      ) {
+        setDataMode("real");
+        setStatus("");
+        setCountry("");
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
   useEffect(() => {
     const controller = new AbortController();
     const timer = setTimeout(() => void load(controller.signal), 200);
@@ -247,9 +286,12 @@ export default function Dashboard() {
   }, [load]);
   async function save(ad: Ad) {
     try {
-      await request(`/ads/${ad.id}/saved?saved=${!ad.saved}`, {
-        method: "PUT",
-      });
+      await request(
+        `/ads/${ad.id}/saved?saved=${!ad.saved}&data_mode=${dataMode}`,
+        {
+          method: "PUT",
+        },
+      );
       if (selected?.id === ad.id) setSelected({ ...ad, saved: !ad.saved });
       await load();
     } catch (e) {
@@ -261,17 +303,32 @@ export default function Dashboard() {
     setSelected(ad);
     setHistory([]);
     setAnalysis(null);
+    setEvidence(null);
     setAnalysisError("");
     try {
-      const [observations, details] = await Promise.all([
+      const [observations, details, raw] = await Promise.all([
         request<{ observed_at: string; status: string; source_url: string }[]>(
-          `/ads/${ad.id}/observations`,
+          `/ads/${ad.id}/observations?data_mode=${dataMode}`,
         ),
-        request<Analysis>(`/ads/${ad.id}/analysis`),
+        request<Analysis>(`/ads/${ad.id}/analysis?data_mode=${dataMode}`),
+        request<{
+          items: {
+            id: number;
+            source_id: string;
+            raw_data: Record<string, unknown>;
+            normalized_data: Record<string, unknown>;
+            observed_at: string;
+            rights_reference: string;
+            run_id: string;
+          }[];
+          total: number;
+          page: number;
+        }>(`/ads/${ad.id}/evidence?data_mode=${dataMode}`),
       ]);
       if (requestId === detailRequest.current) {
         setHistory(observations);
         setAnalysis(details);
+        setEvidence(raw);
       }
     } catch (e) {
       if (requestId === detailRequest.current) setAnalysisError(String(e));
@@ -323,7 +380,7 @@ export default function Dashboard() {
     closeDetail();
     setDiscoveryMessage("");
   }
-  const demo = overview?.mode === "demo";
+  const demo = dataMode === "demo";
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -340,7 +397,7 @@ export default function Dashboard() {
           <div>
             Discovery workspace<small>Personal workspace</small>
           </div>
-          <span className="version">v0.1</span>
+          <span className="version">v0.2</span>
         </div>
         <p className="nav-label">WORKSPACE</p>
         <nav>
@@ -401,8 +458,8 @@ export default function Dashboard() {
               </strong>
               <span className="banner-copy">
                 {demo
-                  ? "All ads and signals are synthetic sample data. No live collection is running."
-                  : "Live adapters are disabled until an authorized source is configured."}
+                  ? "All ads and signals in this partition are synthetic. Switch to REAL to search imports."
+                  : "Imported observations. REAL indicates operator-attested provenance; UNKNOWN means provenance is incomplete."}
               </span>
             </span>
             <span className="demo-tag">
@@ -433,26 +490,23 @@ export default function Dashboard() {
             </button>
           </div>
           {view === "Settings" ? (
-            <section className="settings-panel">
-              <h2>Workspace settings</h2>
-              <p>
-                Mode: <strong>{overview?.mode ?? "Unavailable"}</strong>
-              </p>
-              <p>Market priority: United States → European Union</p>
-              <p>
-                Meta & TikTok live collectors: <strong>disabled</strong>. An
-                authorized public source or licensed API is required.
-              </p>
-              <p>
-                Demo mode requires no platform credentials. Configure MODE and
-                DATABASE_URL on the API server. No credentials are stored in
-                this dashboard.
-              </p>
-              <p>
-                This MVP is for a trusted local workspace; authentication is
-                required before public deployment.
-              </p>
-            </section>
+            <DataWorkspace
+              onSearch={(mode) => {
+                setDataMode(mode);
+                setStatus("");
+                setCountry("");
+                setSourceFilter("");
+                setPlatform("");
+                setQuery("");
+                setAdvertiser("");
+                setDomain("");
+                setAfter("");
+                setBefore("");
+                setRecentDays("");
+                setMinDays("0");
+                changeView("Overview");
+              }}
+            />
           ) : (
             <>
               {view === "Overview" && (
@@ -462,13 +516,13 @@ export default function Dashboard() {
                       label: "Ads in your radar",
                       value: overview?.total_ads,
                       icon: Layers3,
-                      note: "Across all demo markets",
+                      note: "Across the selected data partition",
                     },
                     {
                       label: "Active observations",
                       value: overview?.active_ads,
                       icon: Activity,
-                      note: "Status from sample fixtures",
+                      note: "Source-reported status at observation",
                     },
                     {
                       label: "Advertisers discovered",
@@ -585,6 +639,7 @@ export default function Dashboard() {
                       >
                         <option value="US">🇺🇸 United States</option>
                         <option value="">All countries</option>
+                        <option value="EU">European Union (27)</option>
                         <option value="DE">🇩🇪 Germany</option>
                       </select>
                       <button
@@ -596,6 +651,51 @@ export default function Dashboard() {
                       </button>
                     </div>
                     <div className="research-toolbar">
+                      <label>
+                        Dataset{" "}
+                        <select
+                          aria-label="Search data partition"
+                          value={dataMode}
+                          onChange={(e) => {
+                            setDataMode(e.target.value as "demo" | "real");
+                            setPage(1);
+                            closeDetail();
+                          }}
+                        >
+                          <option value="demo">DEMO</option>
+                          <option value="real">REAL / UNKNOWN</option>
+                        </select>
+                      </label>
+                      <label>
+                        Source{" "}
+                        <select
+                          aria-label="Search data source"
+                          value={sourceFilter}
+                          onChange={(e) => {
+                            setSourceFilter(e.target.value);
+                            setPage(1);
+                          }}
+                        >
+                          <option value="">All sources in partition</option>
+                          <option value="demo">Demo Data</option>
+                          <option value="authorized-file">
+                            Authorized File Import
+                          </option>
+                          <option value="meta-ad-library">
+                            Meta Ads Library
+                          </option>
+                          <option value="tiktok-ad-library">
+                            TikTok Ad Library
+                          </option>
+                          <option value="tiktok-creative-center">
+                            TikTok Creative Center
+                          </option>
+                          <option value="licensed-provider">
+                            Licensed Data Provider
+                          </option>
+                          <option value="legacy-unknown">Legacy unknown</option>
+                        </select>
+                      </label>
                       <label>
                         Reported status{" "}
                         <select
@@ -904,6 +1004,9 @@ export default function Dashboard() {
                               {ad.title}
                             </button>
                             <p className="freshness-note">
+                              {ad.source_name} · {ad.corpus} · {ad.data_label}
+                            </p>
+                            <p className="freshness-note">
                               Last observed {date(ad.last_seen)} ·{" "}
                               {ad.status_evidence.freshness}
                             </p>
@@ -922,7 +1025,7 @@ export default function Dashboard() {
                                 <span>Signal score</span>
                               </button>
                               <span className="data-label">
-                                {ad.is_demo ? "DEMO" : "OBSERVED"}
+                                {ad.data_label}
                               </span>
                             </div>
                           </div>
@@ -959,7 +1062,7 @@ export default function Dashboard() {
           )}
           <footer className="page-footer">
             <span>
-              <Radar size={14} /> DROPSpy Radar <span>v0.1</span>
+              <Radar size={14} /> DROPSpy Radar <span>v0.2</span>
             </span>
             <span>Better research. Informed decisions.</span>
           </footer>
@@ -982,9 +1085,13 @@ export default function Dashboard() {
               <X />
             </button>
             <span className="demo-tag">
-              {selected.is_demo ? "SYNTHETIC DEMO" : "OBSERVED DATA"}
+              {selected.data_label} · {selected.source_name}
             </span>
-            <h2>{selected.title}</h2>
+            <h2>{selected.title || "Untitled ad"}</h2>
+            <p>
+              Corpus: {selected.corpus} · Source:{" "}
+              {selected.registry_source_id || "unknown"}
+            </p>
             <p>
               {selected.advertiser} · {selected.platform} · {selected.country}
             </p>
@@ -1092,6 +1199,39 @@ export default function Dashboard() {
             {selected.creatives.map((c, i) => (
               <p key={i}>{c.text}</p>
             ))}
+            <h3>Raw evidence & provenance</h3>
+            {evidence?.items.length ? (
+              evidence.items.map((row) => (
+                <details className="raw-evidence" key={row.id}>
+                  <summary>
+                    {row.source_id} · {date(row.observed_at)} · run {row.run_id}
+                  </summary>
+                  <p>
+                    Rights reference: {row.rights_reference || "Demo/test data"}
+                  </p>
+                  <h4>Original record</h4>
+                  <pre>{JSON.stringify(row.raw_data, null, 2)}</pre>
+                  <h4>Normalized record</h4>
+                  <pre>{JSON.stringify(row.normalized_data, null, 2)}</pre>
+                </details>
+              ))
+            ) : (
+              <p>No retained original file record for this legacy/demo ad.</p>
+            )}
+            {evidence && evidence.page * 10 < evidence.total && (
+              <button
+                className="secondary"
+                onClick={() => {
+                  void request<typeof evidence>(
+                    `/ads/${selected.id}/evidence?data_mode=${dataMode}&page=${evidence.page + 1}`,
+                  )
+                    .then(setEvidence)
+                    .catch((e) => setAnalysisError(String(e)));
+                }}
+              >
+                More evidence
+              </button>
+            )}
             <h3>Observation history</h3>
             {history.map((h, i) => (
               <p key={i}>
@@ -1106,10 +1246,20 @@ export default function Dashboard() {
               {date(selected.last_seen)}
             </p>
             <div className="detail-actions">
-              <a href={selected.source_url} target="_blank" rel="noreferrer">
+              <a
+                href={selected.source_url || undefined}
+                aria-disabled={!selected.source_url}
+                target="_blank"
+                rel="noreferrer"
+              >
                 Source URL <ExternalLink size={14} />
               </a>
-              <a href={selected.landing_url} target="_blank" rel="noreferrer">
+              <a
+                href={selected.landing_url || undefined}
+                aria-disabled={!selected.landing_url}
+                target="_blank"
+                rel="noreferrer"
+              >
                 Landing URL <ExternalLink size={14} />
               </a>
               <button className="primary" onClick={() => void save(selected)}>

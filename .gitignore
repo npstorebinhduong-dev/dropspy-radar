@@ -157,3 +157,7 @@ vite.config.ts.timestamp-*
 __pycache__/
 *.py[cod]
 .pytest_cache/
+
+# Browser test artifacts
+playwright-report/
+test-results/

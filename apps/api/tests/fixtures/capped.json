@@ -1,0 +1,21 @@
+{
+  "fixture_only": true,
+  "completeness": "capped",
+  "records": [
+    {
+      "external_id": "fixture-light-1",
+      "platform": "facebook",
+      "advertiser": "Fixture Garden Co",
+      "advertiser_id": "fixture-page-1",
+      "title": "Solar garden lights",
+      "country": "US",
+      "status": "active",
+      "observed_at": "2026-10-08T12:00:00Z",
+      "delivery_start": "2026-09-20T00:00:00Z",
+      "source_url": "https://example.com/fixture/ads/1",
+      "landing_url": "https://example.com/fixture/products/lights",
+      "creative_text": "Fixture only. Solar garden lights. Shop now!",
+      "creative_url": "https://example.com/fixture/creative.jpg"
+    }
+  ]
+}

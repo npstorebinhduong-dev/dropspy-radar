@@ -1,4 +1,4 @@
-# DROPSpy Radar v0.1
+# DROPSpy Radar v0.2
 
 A runnable DEMO-first ad intelligence workspace for the US, with an EU sample market. Next.js + TypeScript + Tailwind, FastAPI collectors, PostgreSQL, Docker Compose. Default sample ads are synthetic and clearly labeled. An opt-in public Meta first-page reader and authorized local-file import are available; live access is not yet verified in this environment. No CAPTCHA solving, private endpoint collection, ROAS or fabricated revenue.
 
@@ -54,8 +54,16 @@ Dependency versions: Python requirements.lock pins transitive dependencies, npm 
 
 ## Limitations
 
-Single-user local MVP. Public Meta collection is opt-in, partial and currently blocked by environment networking; no successful live ad retrieval is claimed. Competitor Tracker summarizes current data, without scheduled watchlists. Product Intelligence is per-ad scoring, without product clustering. Landing quality uses HTTPS syntax only. Observations show sparse snapshots, not continuous ad delivery. Schema bootstrap uses `create_all`, not migrations. One ingestion worker at a time. Authentication, migrations, real provider integration and browser UI automation are next milestones.
+Single-user local MVP. Public Meta collection is opt-in, partial and currently blocked by environment networking; no successful live ad retrieval is claimed. Competitor Tracker summarizes current data, without scheduled watchlists. Product Intelligence is per-ad scoring, without product clustering. Landing quality uses HTTPS syntax only. Observations show sparse snapshots, not continuous ad delivery. PostgreSQL startup uses Alembic migrations; imports use atomic upserts and a durable, leased batch worker. Authentication, approved live providers and advanced product intelligence remain future milestones.
 
 See [architecture and scoring](docs/architecture.md) and [source/license research](docs/research.md). Research does not establish permission to collect platform data; no code from those repositories was copied.
 
-See [active search, analysis and public Meta access](docs/active-search.md) for new controls, configuration, observed network blocker and import format. The Phase 2 score and full migration/job blueprint remain proposed.
+See [active search, analysis and public Meta access](docs/active-search.md) for new controls, configuration, observed network blocker and import format. The Phase 2 score remains proposed; v0.2 implements the migration and import-job foundation described below.
+
+## v0.2 Data Foundation
+
+Keep the seven dashboard views; Settings now contains Data Sources, upload/preview/mapping, and persisted Import History. Dedicated pages are also available at `/data-sources`, `/imports`, `/import-history`. Select DEMO or REAL/UNKNOWN in search, then filter Meta/TikTok, US/EU27, source, advertiser, text and dates. Detail shows raw evidence and provenance. REAL is operator-attested, not an independent data/license verification.
+
+[Import guide, schema, migrations and tests](docs/import-guide.md) · [US live-source feasibility](docs/research/US_LIVE_SOURCE_FEASIBILITY.md).
+
+Upload/import never fetches external URLs or evaluates CSV formulas. Exact replay and concurrent upserts are tested on PostgreSQL. Synthetic complete/partial/capped histories remain DEMO; absence never marks an ad stopped. Source registry approval is mandatory before live collection, in addition to environment flags. No new AI or Winning Product Score is implemented.
